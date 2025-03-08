@@ -1,0 +1,54 @@
+name: Build KhiCAS CE
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    name: "Build KhiCAS ${{ matrix.langname }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [ fr, en, l2 ]
+        include:
+          - variant: "fr"
+            langname: "Francais"
+            buildscript: "mkappfr"
+          - variant: "en"
+            langname: "English"
+            buildscript: "mkappen"
+          - variant: "l2"
+            langname: "FrancaisL2"
+            buildscript: "mkappl2"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: "Set up shared/ti/ folder"
+        run: |
+          mkdir -p shared/ti/
+          curl -sL https://github.com/YvanTT/arTIfiCE/releases/latest/download/arTIfiCE.8xv -o shared/ti/arTIfiCE.8xv
+          curl -sL https://github.com/jacobly0/asmhook/releases/latest/download/ASMHOOK.zip -o /tmp/ASMHOOK.zip
+          unzip /tmp/ASMHOOK.zip ASMHOOK.8xp -d shared/ti/ && rm /tmp/ASMHOOK.zip
+          cp app_tools/INST.8xp shared/ti/INST.8xp
+
+      - name: Download and extract CEdev
+        run: |
+          curl -sL https://github.com/CE-Programming/toolchain/releases/download/nightly/CEdev-Linux-nightly.tar.gz | tar -xvzf - -C ~
+
+      - name: Build KhiCAS
+        run: |
+          export PATH=~/CEdev/bin:$PATH
+          make clean && ./${{ matrix.buildscript }}
+
+      - name: Prepare files for upload
+        run: |
+          mkdir upload
+          cp -R install_*.txt shared/ti/app shared/ti/*.8x* upload/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KhiCAS_CE_${{ matrix.langname }}
+          path: upload
