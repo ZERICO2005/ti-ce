@@ -1,6 +1,11 @@
 #include <string>
 #include <stdio.h>
 #include "console.h"
+
+#ifdef TICE
+#include <assert.h>
+#endif
+
 //#include "menu_config.h"
 #include "menuGUI.h"
 #include "textGUI.h"
@@ -626,13 +631,14 @@ void print_alpha_shift(int keyflag){
 #endif
     Printxy(x,y,text,0);
   }
-  
+
+#ifndef TICE
   string printint(int i){
     if (!i)
       return string("0");
     if (i<0)
       return string("-")+printint(-i);      
-    int length = (int) floor(log10((double) i));
+    int length = (int) std::floor(std::log10((double) i));
 #if defined VISUALC || defined BESTA_OS
     char * s =new char[length+2];
 #else
@@ -649,6 +655,13 @@ void print_alpha_shift(int keyflag){
     return s;
 #endif
   }
+#else // TICE
+  string printint(int i){
+    char s[sizeof("-8388608")];
+    ti_sprintf(s, "%d", i);
+    return s;
+  }
+#endif
 
 int giacmax(int a,int b){
   return a<b?b:a;
@@ -1620,25 +1633,46 @@ bool inputdouble(const char * msg1,double & d){
       return "";
     return cmdname+l;
   }
- 
-  string print_INT_(int i){
+
+#ifndef TICE
+  static string print_INT_(int i){
     char c[256];
     sprint_int(c,i); // my_sprintf(c,"%d",i);
     return c;
   }
+#else // TICE
+  static string print_INT_(int i) {
+    char c[sizeof("-8388608")];
+    ti_sprintf(c, "%d", i);
+    return c;
+  }
+#endif
 
-  string hexa_print_INT_(int i){
+#ifndef TICE
+  static string hexa_print_INT_(int i){
+    // this prints "0x" when `i == 0`
     string res;
     for (i=(i&0x7fffffff);i;){
       int j=i&0xf;
       i >>= 4;
       if (j>=10)
-	res =char('a'+(j-10))+res;
+  res =char('a'+(j-10))+res;
       else
-	res =char('0'+j)+res;
+  res =char('0'+j)+res;
     }
     return "0x"+res;
   }
+#else // TICE
+  static string hexa_print_INT_(int i){
+    // replicates the bug when `i == 0`
+    char c[sizeof("0xffffff")] = {'0', 'x', '\0'};
+    if (i != 0) {
+      ti_sprintf(c, "0x%x", i);
+    }
+    return c;
+  }
+#endif
+
   int chartab(){
     // display table
     drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);
@@ -1659,14 +1693,20 @@ bool inputdouble(const char * msg1,double & d){
       int currc=32+16*row+col;
       char buf[8]={(char)(currc==127?'X':currc),32,0};
       Printxy(1+14*col,dy+16*row,buf,1); // draw char selected
+    #ifndef TICE
       string s("Current ");
       s += char(currc);
       s += " ";
-      s += print_INT_(currc);
+      s += print_INT_(currc); // exactly %d
       s += " ";
-      s += hexa_print_INT_(currc);
+      s += hexa_print_INT_(currc); // exactly 0x%x
       s += "  ";
       Printxy(0,16*10,s.c_str(),TEXT_MODE_NORMAL);
+    #else
+      char s[sizeof("Current c -8388608 0xffffff  ")];
+      ti_sprintf(s, "Current %c %d 0x%x  ", char(currc), currc, currc);
+      Printxy(0,16*10,s,TEXT_MODE_NORMAL);
+    #endif
       // interaction
       int key; ck_getkey(&key);
       Printxy(1+14*col,dy+16*row,buf,0); // undo draw char selected
@@ -1909,7 +1949,10 @@ const char * trig(){
     return true;
   }
 
-string adjust(const char * s,int L=12){
+static constexpr int adjust_size = 12;
+#define adjust_width "%12s"
+
+string adjust(const char * s,int L=adjust_size){
   int l=strlen(s);
   string res(s);
   if (l>L)
@@ -1927,6 +1970,7 @@ void set_xcas_status(){
   statusline(0);
 }
 
+#ifndef TICE
 // app=0 for console, 1 for editor, 2 for eqw, 3 spreadsheet
 void get_current_console_menu(string & menu,string & shiftmenu,string & alphamenu,int &menucolorbg,int app){
   shiftmenu = adjust(menu_f6);
@@ -1994,6 +2038,113 @@ void get_current_console_menu(string & menu,string & shiftmenu,string & alphamen
   }
   menucolorbg=python_color;
 }
+#else // TICE
+
+// static inline char* fast_adjust(char* buf, const char* text, size_t L) {
+//   memset(buf, ' ', L);
+//   strncpy(buf, text, L);
+//   buf[L + 1] = '\0';
+//   return buf;
+// }
+
+static void menu_save(char* dest, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    *dest = (FMenu_entries_name[i])[adjust_size + 1];
+    dest++;
+  }
+}
+
+static void menu_restore(char* src, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    (FMenu_entries_name[i])[adjust_size + 1] = *src;
+    src++;
+  }
+}
+
+// app=0 for console, 1 for editor, 2 for eqw, 3 spreadsheet
+void get_current_console_menu(string & menu,string & shiftmenu,string & alphamenu,int &menucolorbg,int app){
+  constexpr size_t L = adjust_size;
+  constexpr size_t L_null = L + 1;
+  constexpr int output_max_size = 80;
+  char output[output_max_size];
+  constexpr size_t menu_swap_len = 15;
+  char menu_swap[menu_swap_len];
+  menu_save(menu_swap, menu_swap_len);
+  const int width = app==2 ? 0 : L;
+  /* shiftmenu */ {
+    int ret = sprintf(output,
+      adjust_width "|" adjust_width "|" "%*s" "|" "%*s" "|" adjust_width,
+      menu_f6,
+      menu_f7,
+      width, app==2?"   zoom   ":menu_f8,
+      width, app==2?"   evalf  ":menu_f9,
+      menu_f10
+    );
+    assert(ret < output_max_size);
+    shiftmenu = "";
+    shiftmenu += output;
+  }
+  /* alphamenu */ {
+    int ret = sprintf(output,
+      adjust_width "|" adjust_width "|" "%*s" "|" "%*s" "|" adjust_width,
+      menu_f11,
+      menu_f12,
+      width, app==2?"   zoom   ":menu_f13,
+      width, app==2?"  regroup  ":menu_f14,
+      menu_f15
+    );
+    assert(ret < output_max_size);
+    alphamenu = "";
+    alphamenu += output;
+  }
+  if (0 && app==3){
+    menu=(lang?" outil | stat | edit | cmds | A<>a | menu":" tools | stat | edit | cmds | A<>a | menu");
+#ifndef FX
+    menucolorbg=COLOR_ORANGE;
+#endif
+    goto restore_menus;
+  }
+  if (app==2){
+    int ret = sprintf(output,
+      adjust_width "| " adjust_width "|  edit sel  |   eval   |  |  copy sel  ",
+      menu_f1,
+      menu_f2
+    );
+    assert(ret < output_max_size);
+    menu += output;
+    menucolorbg=34800;
+    goto restore_menus;
+  }
+  if (0 && app==5){
+    menu=" point | lines | disp | cmds | A<>a | file ";
+    shiftmenu="triangl|polyg|geo3d|solids|gdiff|measur";
+    alphamenu="tests|analyt|cursor|transf|plots|conic";
+    menucolorbg=COLOR_CYAN;
+    goto restore_menus;
+  }
+  if (app==1){
+    menu=(lang==1)
+      ?" if/else... | def/for... |  edition  |   char/io   |  Fichier    "
+      :" if/else... | def/for... |     edit    |  char/io  |    File    ";
+  }
+  else {
+    int ret = sprintf(output,
+      adjust_width "| " adjust_width "| " adjust_width "| chartab %s",
+      menu_f1,
+      menu_f2,
+      menu_f3,
+      lang?"|  Fichier  ":"|    File     "
+    );
+    assert(ret < output_max_size);
+    menu += output;
+  }
+  //drawRectangle(0,174,LCD_WIDTH_PX,24,COLOR_BLACK);
+  menucolorbg = (app==1) ? 65512 : 65520; // python_color
+restore_menus:
+  menu_restore(menu_swap, menu_swap_len);
+}
+
+#endif
 
 void console_disp_status(int keyflag){
   Console_FMenu_Init();

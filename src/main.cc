@@ -288,7 +288,13 @@ const char * select_var(){
     smallmenuitems[i].text=(char *) vs[i].c_str();
   }
   // total += sizeof(giac::context)+contextptr->tabptr->capacity()*(sizeof(const char *)+sizeof(giac::gen)+8)+bytesize(giac::history_in(contextptr))+bytesize(giac::history_out(contextptr));
+#ifndef TICE
   vs[i]="purge(~"+giac::print_INT_(total)+')';
+#else
+  char* vs_str = new char [sizeof("purge(~-8388608)")];
+  sprintf(vs_str, "purge(~%d)", total);
+  vs[i]=vs_str;
+#endif
   smallmenuitems[i].text=(char *)vs[i].c_str();
   smallmenuitems[i+1].text=(char *)"assume(";
   smallmenuitems[i+2].text=(char *)"restart ";
@@ -300,8 +306,14 @@ const char * select_var(){
   smallmenu.scrollbar=1;
   smallmenu.scrollout=1;
   int freemem=(int)malloc(0xffffff);
+#ifndef TICE
   string title=("Variables "+giac::print_INT_(freemem));
   smallmenu.title = (char*) title.c_str();
+#else
+  char* title = new char [sizeof("Variables -8388608")];
+  sprintf(title, "Variables %d", freemem);
+  smallmenu.title = (char*) title;
+#endif
   //MsgBoxPush(5);
   int sres = doMenu(&smallmenu);
   //MsgBoxPop();

@@ -224,26 +224,47 @@ namespace giac {
     s += c;
   }
 
+#ifndef TICE
   string print_INT_(int i){
     char c[256];
     // sprint_int(c,i); 
     sprintf(c,"%d",i);
     return c;
   }
+#else // TICE
+  string print_INT_(int i){
+    char c[sizeof("-8388608")];
+    ti_sprintf(c, "%d", i);
+    return c;
+  }
+#endif
 
+#ifndef TICE
   string hexa_print_INT_(int i){
+    // this prints "0x" when `i == 0`
     string res;
     for (i=(i&0x7fffffff);i;){
       int j=i&0xf;
       i >>= 4;
       if (j>=10)
-	res =char('a'+(j-10))+res;
+  res =char('a'+(j-10))+res;
       else
-	res =char('0'+j)+res;
+  res =char('0'+j)+res;
     }
     return "0x"+res;
   }
+#else // TICE
+  string hexa_print_INT_(int i){
+    // replicates the bug when `i == 0`
+    char c[sizeof("0xffffff")] = {'0', 'x', '\0'};
+    if (i != 0) {
+      ti_sprintf(c, "0x%x", i);
+    }
+    return c;
+  }
+#endif
 
+#ifndef TICE
   string octal_print_INT_(int i){
     char c[256];
     mpz_t tmp;
@@ -252,6 +273,13 @@ namespace giac {
     mpz_clear(tmp);
     return string("0o")+c;
   }
+#else // TICE
+  string octal_print_INT_(int i){
+    char c[sizeof("0o77777777")];
+    ti_sprintf(c, "0o%o", i);
+    return c;
+  }
+#endif
 
   string binary_print_INT_(int i){
     char c[256];

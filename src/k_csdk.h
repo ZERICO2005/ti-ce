@@ -56,6 +56,7 @@ extern "C" {
   
 #ifdef TICE
 #include <stdlib.h>
+#include <ti_sprintf.h>
   //long my_strtol(const char * nptr, char ** endptr, int base);
   int convertcolor(int c);
   #define STANDALONE // don't use graphx and fileioc
@@ -245,7 +246,11 @@ extern "C" {
   extern int (*shutdown)(); // function called after 2 hours of idle
   extern short int shutdown_state;
   inline void Bdisp_PutDisp_DD(void){ sync_screen(); }
+#ifndef TICE
   inline void sprint_int(char * c,int i){ sprintf(c,"%d",i);}
+#else
+  inline void sprint_int(char * c,int i){ ti_sprintf(c,"%d",i);}
+#endif
   inline void sprint_double(char * c,double d){ sprintf(c,"%.4g",d);}
   int GetSetupSetting(int k);
   inline int Setup_GetEntry(int k){ return GetSetupSetting(k); }
