@@ -626,7 +626,8 @@ void print_alpha_shift(int keyflag){
 #endif
     Printxy(x,y,text,0);
   }
-  
+
+#ifndef TICE
   string printint(int i){
     if (!i)
       return string("0");
@@ -649,6 +650,13 @@ void print_alpha_shift(int keyflag){
     return s;
 #endif
   }
+#else // TICE
+  string printint(int i) {
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "%d", i);
+    return c;
+  }
+#endif
 
 int giacmax(int a,int b){
   return a<b?b:a;
@@ -1620,7 +1628,8 @@ bool inputdouble(const char * msg1,double & d){
       return "";
     return cmdname+l;
   }
- 
+
+#ifndef TICE
   string print_INT_(int i){
     char c[256];
     sprint_int(c,i); // my_sprintf(c,"%d",i);
@@ -1639,6 +1648,21 @@ bool inputdouble(const char * msg1,double & d){
     }
     return "0x"+res;
   }
+#else
+  string print_INT_(int i){
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "%d", i);
+    return c;
+  }
+
+  string hexa_print_INT_(int i){
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "0x%x", i);
+    return c;
+  }
+
+#endif
+
   int chartab(){
     // display table
     drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);
@@ -1659,14 +1683,21 @@ bool inputdouble(const char * msg1,double & d){
       int currc=32+16*row+col;
       char buf[8]={(char)(currc==127?'X':currc),32,0};
       Printxy(1+14*col,dy+16*row,buf,1); // draw char selected
-      string s("Current ");
-      s += char(currc);
-      s += " ";
-      s += print_INT_(currc);
-      s += " ";
-      s += hexa_print_INT_(currc);
-      s += "  ";
-      Printxy(0,16*10,s.c_str(),TEXT_MODE_NORMAL);
+      #ifndef TICE
+        string s("Current ");
+        s += char(currc);
+        s += " ";
+        s += print_INT_(currc);
+        s += " ";
+        s += hexa_print_INT_(currc);
+        s += "  ";
+        Printxy(0,16*10,s.c_str(),TEXT_MODE_NORMAL);
+      #else
+        char s[50]; // should be more than enough
+        _ti_sprintf(s, "Current %c %d %#x  ", char(currc), currc, currc);
+        Printxy(0,16*10,s,TEXT_MODE_NORMAL);
+      #endif
+      
       // interaction
       int key; ck_getkey(&key);
       Printxy(1+14*col,dy+16*row,buf,0); // undo draw char selected

@@ -552,6 +552,14 @@ inline float atan2f(float f1,float f2,int rad){ if (rad) return std::atan2(f1,f2
 #define fis_inf my_isinf
 #endif // BCD
 
+#ifdef TICE
+extern "C" {
+int _ti_sprintf(
+  char *__restrict buffer, const char *__restrict format, ...
+) __attribute__ ((format (__printf__, 2, 3)));
+}
+#endif
+
 #ifdef FIR_ANDROID
 #undef B0 //this conflicts with a define
 #undef bcopy //this conflicts with a define

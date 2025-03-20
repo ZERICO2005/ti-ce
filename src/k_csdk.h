@@ -65,6 +65,9 @@ extern "C" {
   void sdk_init(void);
   void sdk_end(void);
   void clear_screen(void);
+  int _ti_sprintf(
+    char *__restrict buffer, const char *__restrict format, ...
+  ) __attribute__ ((format (__printf__, 2, 3)));
 #ifdef STANDALONE
 #include "graphic.h"
 #endif
@@ -245,7 +248,11 @@ extern "C" {
   extern int (*shutdown)(); // function called after 2 hours of idle
   extern short int shutdown_state;
   inline void Bdisp_PutDisp_DD(void){ sync_screen(); }
-  inline void sprint_int(char * c,int i){ sprintf(c,"%d",i);}
+  #ifndef TICE
+    inline void sprint_int(char * c,int i){ sprintf(c,"%d",i);}
+  #else
+    inline void sprint_int(char * c,int i){ _ti_sprintf(c,"%d",i);}
+  #endif
   inline void sprint_double(char * c,double d){ sprintf(c,"%.4g",d);}
   int GetSetupSetting(int k);
   inline int Setup_GetEntry(int k){ return GetSetupSetting(k); }

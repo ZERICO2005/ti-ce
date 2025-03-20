@@ -18,14 +18,22 @@ struct stdistream {
 };
 
 inline stdostream & operator << (stdostream & os,int i){
+  #ifdef TICE
+  char buf[24];
+  #else
   char buf[256];
+  #endif
   sprintf(buf,"%d",i);
   dConsolePut(buf);
   return os;
 }
 
 inline stdostream & operator << (stdostream & os,unsigned i){
+  #ifdef TICE
+  char buf[24];
+  #else
   char buf[256];
+  #endif
   sprintf(buf,"%u",i);
   dConsolePut(buf);
   return os;
@@ -37,7 +45,11 @@ inline stdostream & operator << (stdostream & os,char ch){
 }
 
 inline stdostream & operator << (stdostream & os,double d){
+  #ifdef TICE
+  char buf[120]; // ensures that the buffer remains in range of IX and IY
+  #else
   char buf[256];
+  #endif
   sprintf(buf,"%f",d);
   dConsolePut(buf);
   return os;

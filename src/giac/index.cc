@@ -218,6 +218,7 @@ namespace giac {
     return true;
   }
 
+#ifndef TICE
   void add_print_INT_(string & s,int i){
     char c[256];
     my_sprintf(c,"%d",i);
@@ -252,7 +253,25 @@ namespace giac {
     mpz_clear(tmp);
     return string("0o")+c;
   }
+#else // TICE
+  string print_INT_(int i){
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "%d", i);
+    return c;
+  }
 
+  string hexa_print_INT_(int i){
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "0x%x", i);
+    return c;
+  }
+
+  string octal_print_INT_(int i){
+    char c[16]; // impossible for output to be longer than this
+    _ti_sprintf(c, "0o%o", i);
+    return c;
+  }
+#endif
   string binary_print_INT_(int i){
     char c[256];
     mpz_t tmp;
