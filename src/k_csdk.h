@@ -56,7 +56,8 @@ extern "C" {
   
 #ifdef TICE
 #include <stdlib.h>
-#include <ti_sprintf.h>
+// #include <ti_sprintf.h>
+#define ti_sprintf sprintf
   //long my_strtol(const char * nptr, char ** endptr, int base);
   int convertcolor(int c);
   #define STANDALONE // don't use graphx and fileioc

@@ -62,7 +62,8 @@
 #endif
 
 #ifdef TICE
-#include <ti_sprintf.h>
+// #include <ti_sprintf.h>
+#define ti_sprintf sprintf
 #endif
 
 #if defined FXCG || defined TICE

@@ -21,7 +21,8 @@ typedef char Char;
 #endif
 
 #ifdef TICE
-#include <ti_sprintf.h>
+// #include <ti_sprintf.h>
+#define ti_sprintf sprintf
 #endif
 
 #ifdef TICE
