@@ -876,8 +876,13 @@ void textarea_disp(textArea * text,int & isFirstDraw,int & totalTextY,int & scro
       textY=textY+text->lineHeight+v[cur].lineSpacing;
     }
     if (editable){
-      char line_s[16];
-      sprint_int(line_s,cur+1);
+      #ifndef TICE
+        char line_s[16];
+        sprint_int(line_s,cur+1);
+      #else
+        char line_s[sizeof("-8388608")];
+        ti_sprintf(line_s, "%d", cur+1);
+      #endif
       textX=os_draw_string_small(textX,textY,TEXT_COLOR_PURPLE,TEXT_COLOR_WHITE,line_s,/*fake*/!do_printline); // PrintMiniMini(&textX, &textY, (Char *)line_s, 0, TEXT_COLOR_PURPLE, 0 );
     }
     textX=text->x+deltax;

@@ -110,15 +110,30 @@ const int col_width=45;
 const int row_height=20;
 const int col_width=60;
 #endif
-string printcell(int i,int j){
-  string s="";
-  s+=char('A'+j);
-  s+=giac::print_INT_(i);
-  return s;
-}
-string printsel(int r,int c,int R,int C){
-  return printcell(r,c)+":"+printcell(R,C);
-}
+
+#ifndef TICE
+  string printcell(int i,int j){
+    string s="";
+    s+=char('A'+j);
+    s+=giac::print_INT_(i);
+    return s;
+  }
+  string printsel(int r,int c,int R,int C){
+    return printcell(r,c)+":"+printcell(R,C);
+  }
+#else
+  string printcell(int i,int j) {
+    char s[sizeof("A-8388608")];
+    s[0] = 'A' + j;
+    sprintf(&s[1],"%d", i);
+    return s;
+  }
+  string printsel(int r,int c,int R,int C){
+    char s[sizeof("A-8388608:A-8388608")];
+    sprintf(s, "%c%d:%c%d", 'A' + c, r, 'A' + C, R);
+    return s;
+  }
+#endif
 
 void change_undo(tableur & t){
   t.undo=t.m;
@@ -134,23 +149,23 @@ void change_undo(tableur & t){
       if (g.type!=_VECT) continue;
       vecteur & v=*g._VECTptr;
       for (int j=0;j<t.ncols;++j){
-	gen vj=v[j];
-	if (vj.type==_VECT && vj._VECTptr->size()==3){
-	  vecteur vjv=*vj._VECTptr;
-	  vjv[1]=0;
-	  vj=gen(vjv,vj.subtype);
-	}
-	printcell_current_col(contextptr)=j;
-	s += vj.print(contextptr);
-	if (j==t.ncols-1)
-	  s += "]";
-	else
-	  s += ",";
+        gen vj=v[j];
+        if (vj.type==_VECT && vj._VECTptr->size()==3){
+          vecteur vjv=*vj._VECTptr;
+          vjv[1]=0;
+          vj=gen(vjv,vj.subtype);
+        }
+        printcell_current_col(contextptr)=j;
+        s += vj.print(contextptr);
+        if (j==t.ncols-1)
+          s += "]";
+        else
+          s += ",";
       }
       if (i==t.nrows-1)
-	s += "]";
+        s += "]";
       else
-	s += ",";      
+        s += ",";
     }
     return s;
   }  
@@ -209,14 +224,14 @@ void sheet_status(tableur & t,GIAC_CONTEXT){
     for (int i=0;i<t.nrows;++i){
       vecteur & v = *t.m[i]._VECTptr;
       for (int j=0;j<t.ncols;++j){
-	gen & g=v[j];
-	if (g.type==_VECT){
-	  vecteur & w=*g._VECTptr;
-	  if (w[0].type==_SYMB){
-	    // cout << "fix " << w[0] << "\n";
-	    w[0]=spread_convert(w[0],i,j,contextptr);
-	  }
-	}
+        gen & g=v[j];
+        if (g.type==_VECT){
+          vecteur & w=*g._VECTptr;
+          if (w[0].type==_SYMB){
+            // cout << "fix " << w[0] << "\n";
+            w[0]=spread_convert(w[0],i,j,contextptr);
+          }
+        }
       }
     }
   }
@@ -487,28 +502,45 @@ void sheet_pntv(const vecteur & v,vecteur & res){
 void resizesheet(tableur &t){
   int cur_r=t.m.size(),cur_c=t.m.front()._VECTptr->size(),nr=t.nrows,nc=t.ncols;
   if (nr!=cur_r || nc!=cur_c){
-    if (do_confirm(((lang==1?"Redimensionner ":"Resize ")+giac::print_INT_(cur_r)+"x"+giac::print_INT_(cur_c)+"->"+giac::print_INT_(nr)+"x"+giac::print_INT_(nc)).c_str())){
+  #ifndef TICE
+    if (do_confirm((
+      (lang==1?"Redimensionner ":"Resize ")
+      + giac::print_INT_(cur_r)+"x"
+      + giac::print_INT_(cur_c)+"->"
+      + giac::print_INT_(nr)+"x"
+      + giac::print_INT_(nc)
+    ).c_str())) {
+  #else
+    char confirm_str[
+      sizeof("Redimensionner " "-8388608x-8388608->-8388608x-8388608")
+    ];
+    sprintf(
+      confirm_str, "%s%dx%d->%dx%d",
+      (lang==1)?"Redimensionner ":"Resize ",
+      cur_r, cur_c, nr, nc
+    );
+    if (do_confirm(confirm_str)) {
+  #endif
       vecteur fill(3,0);
-      if (nr<cur_r) // erase rows
-	t.m.resize(nr);
-      else {
-	for (;cur_r<nr;++cur_r){
-	  vecteur tmp;
-	  for (int j=0;j<nc;++j)
-	    tmp.push_back(freecopy(fill));
-	  t.m.push_back(tmp);
-	}
+      if (nr<cur_r) { // erase rows
+	      t.m.resize(nr);
+      } else {
+        for (;cur_r<nr;++cur_r){
+          vecteur tmp;
+          for (int j=0;j<nc;++j)
+            tmp.push_back(freecopy(fill));
+          t.m.push_back(tmp);
+        }
       }
       for (int i=0;i<nr;++i){
-	vecteur & v=*t.m[i]._VECTptr;
-	int cur_c=v.size();
-	if (nc<cur_c){
-	  t.m[i]=vecteur(v.begin(),v.begin()+nc);
-	}
-	else {
-	  for (;cur_c<nc;++cur_c)
-	    v.push_back(freecopy(fill));
-	}
+        vecteur & v=*t.m[i]._VECTptr;
+        int cur_c=v.size();
+        if (nc<cur_c) {
+          t.m[i]=vecteur(v.begin(),v.begin()+nc);
+        } else {
+          for (;cur_c<nc;++cur_c)
+            v.push_back(freecopy(fill));
+        }
       }
       t.cur_row=giac::giacmin(t.cur_row,t.nrows);
       t.cur_col=giac::giacmin(t.cur_col,t.ncols);
@@ -555,44 +587,44 @@ void sheet_menu_setup(tableur & t,GIAC_CONTEXT){
     }
     if (sres == MENU_RETURN_SELECTION  || sres==KEY_CTRL_EXE) {
       if (smallmenu.selection == 1){
-	double d=decimal_digits(contextptr);
-	if (inputdouble("Nombre de digits?",d) && d==int(d) && d>0){
-	  decimal_digits(d,contextptr);
-	}
-	continue;
+        double d=decimal_digits(contextptr);
+        if (inputdouble("Nombre de digits?",d) && d==int(d) && d>0){
+          decimal_digits(d,contextptr);
+        }
+        continue;
       }
       if (smallmenu.selection == 2){
-	double d=t.nrows;
-	if (inputdouble((lang==1?"Nombre de lignes?":"Rows?"),d) && d==int(d) && d>0){
-	  t.nrows=d;
-	}
-	continue;
+        double d=t.nrows;
+        if (inputdouble((lang==1?"Nombre de lignes?":"Rows?"),d) && d==int(d) && d>0){
+          t.nrows=d;
+        }
+        continue;
       }
       if (smallmenu.selection == 3){
-	double d=t.ncols;
-	if (inputdouble((lang==1?"Nombre de colonnes?":"Colonnes?"),d) && d==int(d) && d>0){
-	  t.ncols=d;
-	}
-	continue;
+        double d=t.ncols;
+        if (inputdouble((lang==1?"Nombre de colonnes?":"Colonnes?"),d) && d==int(d) && d>0){
+          t.ncols=d;
+        }
+        continue;
       }
       if (smallmenu.selection == 4){
-	t.recompute=!t.recompute;
-	continue;
+        t.recompute=!t.recompute;
+        continue;
       }
       if (smallmenu.selection==5){
-	t.matrix_fill_cells=!t.matrix_fill_cells;
-	continue;
+        t.matrix_fill_cells=!t.matrix_fill_cells;
+        continue;
       }
       if (smallmenu.selection == 6){
-	t.movedown=!t.movedown;
-	continue;
+        t.movedown=!t.movedown;
+        continue;
       }
       if (smallmenu.selection == smallmenu.numitems){
-	change_undo(t);
-	resizesheet(t);
-	break;
-      }	
-    }      
+        change_undo(t);
+        resizesheet(t);
+        break;
+      }
+    }
   } // end endless while
 }
 
@@ -775,7 +807,14 @@ void sheet_cmd(tableur & t,const char * ans){
   string s=ans; 
   if (t.sel_row_begin>=0){
     t.cmdline="";
-    s="="+s+"matrix("+giac::print_INT_(giac::absint(t.sel_row_begin-t.cur_row)+1)+","+giac::print_INT_(giac::absint(t.sel_col_begin-t.cur_col)+1)+","+printsel(t.sel_row_begin,t.sel_col_begin,t.cur_row,t.cur_col)+")";
+    s =
+      "="+s+"matrix("
+      +giac::print_INT_(giac::absint(t.sel_row_begin-t.cur_row)+1)
+      +","
+      +giac::print_INT_(giac::absint(t.sel_col_begin-t.cur_col)+1)
+      +","
+      +printsel(t.sel_row_begin,t.sel_col_begin,t.cur_row,t.cur_col)
+      +")";
     if (t.cur_row<t.sel_row_begin)
       t.cur_row=t.sel_row_begin;
     t.sel_row_begin=-1;
@@ -785,17 +824,17 @@ void sheet_cmd(tableur & t,const char * ans){
     // find empty cell in next rows
     for (i=t.cur_row+1;i<t.nrows;++i){
       if (is_empty_cell(t.m[i][t.cur_col]))
-	break;
+      break;
     }
     if (i==t.nrows){
       // find an empty cell in next columns
       for (j=t.cur_col+1;j<t.ncols;++j){
-	for (i=0;i<t.nrows;++i){
-	  if (is_empty_cell(t.m[i][j]))
-	    break;
-	}
-	if (i<t.nrows)
-	  break;
+        for (i=0;i<t.nrows;++i){
+          if (is_empty_cell(t.m[i][j]))
+            break;
+        }
+        if (i<t.nrows)
+          break;
       }
     }
     if (i<t.nrows && j<t.ncols){
@@ -2037,7 +2076,10 @@ void displaygraph(const giac::gen & ge){
         int keyflag = GetSetupSetting( (unsigned int)0x14);
         if (keyflag==0)
           handle_f5();
-        if (inputline(lang?"Stocker selection dans":"Save selection in",lang?"Nom de variable: ":"Variable name: ",varname,false) && !varname.empty() && isalpha(varname[0])){
+        if (
+          inputline(lang?"Stocker selection dans":"Save selection in",lang?"Nom de variable: ":"Variable name: ",varname,false)
+          && !varname.empty() && isalpha(varname[0])
+        ){
           giac::gen g(varname,contextptr);
           giac::gen ge(eval(g,1,contextptr));
           if (g.type!=_IDNT){
@@ -2063,7 +2105,10 @@ void displaygraph(const giac::gen & ge){
       }
       if (key==KEY_CTRL_DEL){
         vector<int> goto_sel;
-        if (xcas::Equation_adjust_xy(eq.data,xleft,ytop,xright,ybottom,gsel,gselparent,gselpos,&goto_sel) && gsel && xcas::do_select(*gsel,true,value) && value.type==_EQW){
+        if (
+          xcas::Equation_adjust_xy(eq.data,xleft,ytop,xright,ybottom,gsel,gselparent,gselpos,&goto_sel)
+          && gsel && xcas::do_select(*gsel,true,value) && value.type==_EQW
+        ){
           value=value._EQWptr->g;
           if (value.type==_SYMB){
             gen tmp=value._SYMBptr->feuille;
@@ -2226,7 +2271,10 @@ void displaygraph(const giac::gen & ge){
         }
         else {
           vector<int> goto_sel;
-          if (xcas::Equation_adjust_xy(eq.data,xleft,ytop,xright,ybottom,gsel,gselparent,gselpos,&goto_sel) && gsel && xcas::do_select(*gsel,true,value) && value.type==_EQW){
+          if (
+            xcas::Equation_adjust_xy(eq.data,xleft,ytop,xright,ybottom,gsel,gselparent,gselpos,&goto_sel)
+            && gsel && xcas::do_select(*gsel,true,value) && value.type==_EQW
+          ) {
             ustl::string s;
             if (ins){
               if (key==KEY_CTRL_PASTE)
@@ -2268,7 +2316,10 @@ void displaygraph(const giac::gen & ge){
       if (key==KEY_CTRL_EXIT || key==KEY_CTRL_AC){
         if (!edited)
           return geq;
-        if (confirm(lang?"Vraiment abandonner?":"Really leave",lang?"F1: retour editeur,  F5: confirmer":"F1: back to editor,  F5: confirm")==KEY_CTRL_F5)
+        if (confirm(
+          lang?"Vraiment abandonner?":"Really leave",
+          lang?"F1: retour editeur,  F5: confirmer":"F1: back to editor,  F5: confirm"
+        )==KEY_CTRL_F5)
           return undef;
       }
       bool doit=eqdata.dx>=LCD_WIDTH_PX;
@@ -2496,7 +2547,11 @@ void displaygraph(const giac::gen & ge){
                 args=makesequence(args,key==KEY_CHAR_CUBEROOT?3:4);
               if (op==at_subst)
                 args=makesequence(args,giac::symb_equal(vx_var(),0));
-              unary_function_ptr immediate_op[]={*at_eval,*at_evalf,*at_evalc,*at_regrouper,*at_simplify,*at_normal,*at_ratnormal,*at_factor,*at_cfactor,*at_partfrac,*at_cpartfrac,*at_expand,*at_canonical_form,*at_exp2trig,*at_trig2exp,*at_sincos,*at_lin,*at_tlin,*at_tcollect,*at_texpand,*at_trigexpand,*at_trigcos,*at_trigsin,*at_trigtan,*at_halftan};
+              unary_function_ptr immediate_op[]={
+                *at_eval,*at_evalf,*at_evalc,*at_regrouper,*at_simplify,*at_normal,*at_ratnormal,*at_factor,
+                *at_cfactor,*at_partfrac,*at_cpartfrac,*at_expand,*at_canonical_form,*at_exp2trig,*at_trig2exp,*at_sincos,
+                *at_lin,*at_tlin,*at_tcollect,*at_texpand,*at_trigexpand,*at_trigcos,*at_trigsin,*at_trigtan,*at_halftan
+              };
               if (equalposcomp(immediate_op,*op._FUNCptr)){
                 //giac::set_abort();
                 tmp=(*op._FUNCptr)(args,contextptr);
@@ -2911,7 +2966,12 @@ void displaygraph(const giac::gen & ge){
   }
 
   bool binary_op(const unary_function_ptr & u){
-    const unary_function_ptr binary_op_tab_ptr []={*at_plus,*at_prod,*at_pow,*at_and,*at_ou,*at_xor,*at_different,*at_same,*at_equal,*at_unit,*at_compose,*at_composepow,*at_deuxpoints,*at_tilocal,*at_pointprod,*at_pointdivision,*at_pointpow,*at_division,*at_normalmod,*at_minus,*at_intersect,*at_union,*at_interval,*at_inferieur_egal,*at_inferieur_strict,*at_superieur_egal,*at_superieur_strict,*at_equal2,0};
+    const unary_function_ptr binary_op_tab_ptr []={
+      *at_plus,*at_prod,*at_pow,*at_and,*at_ou,*at_xor,*at_different,*at_same,
+      *at_equal,*at_unit,*at_compose,*at_composepow,*at_deuxpoints,*at_tilocal,*at_pointprod,*at_pointdivision,
+      *at_pointpow,*at_division,*at_normalmod,*at_minus,*at_intersect,*at_union,*at_interval,*at_inferieur_egal,
+      *at_inferieur_strict,*at_superieur_egal,*at_superieur_strict,*at_equal2,0
+    };
     return equalposcomp(binary_op_tab_ptr,u);
   }
   
@@ -5081,7 +5141,10 @@ void displaygraph(const giac::gen & ge){
 	}
 #endif
       } // end point.type==_SYMB
-      if (point.type!=_VECT || (point.type==_VECT && (point.subtype==_GROUP__VECT || point.subtype==_VECTOR__VECT) && point._VECTptr->size()==2 && is_zero(point._VECTptr->back()-point._VECTptr->front())) ){ // single point
+      if (point.type!=_VECT || (
+        point.type==_VECT && (point.subtype==_GROUP__VECT || point.subtype==_VECTOR__VECT)
+        && point._VECTptr->size()==2 && is_zero(point._VECTptr->back()-point._VECTptr->front())
+      ) ){ // single point
 	if (!Mon_image.findij((point.type==_VECT?point._VECTptr->front():point),x_scale,y_scale,i0,j0,contextptr))
 	  return;
 	if (i0>0 && i0<mxw && j0>0 && j0<myw)

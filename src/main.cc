@@ -729,28 +729,54 @@ string khicas_state(){
   giac::gen g(giac::_VARS(-1,contextptr)); 
   int b=xcas_python_eval==1?4:python_compat(contextptr);
   python_compat(0,contextptr);
-  char buf[2048]="";
-  //dbg_printf("VARS=%s\n",g.print(contextptr).c_str());
-  if (g.type==giac::_VECT){
-    for (int i=0;i<g._VECTptr->size();++i){
-      string s((*g._VECTptr)[i].print(contextptr));
-      //dbg_printf("VAR[%i] %s\n",i,s.c_str());
-      if (strlen(buf)+s.size()+128<sizeof(buf)){
-	strcat(buf,s.c_str());
-	strcat(buf,":;");
+  #ifndef TICE
+    char buf[2048]="";
+    //dbg_printf("VARS=%s\n",g.print(contextptr).c_str());
+    if (g.type==giac::_VECT){
+      for (int i=0;i<g._VECTptr->size();++i){
+        string s((*g._VECTptr)[i].print(contextptr));
+        //dbg_printf("VAR[%i] %s\n",i,s.c_str());
+        if (strlen(buf)+s.size()+128<sizeof(buf)){
+          strcat(buf,s.c_str());
+          strcat(buf,":;");
+        }
       }
     }
-  }
+    if (strlen(buf)+128<sizeof(buf)){
+      strcat(buf,"python_compat(");
+      strcat(buf,giac::print_INT_(b).c_str());
+      strcat(buf,");angle_radian(");
+      strcat(buf,angle_radian(contextptr)?"1":"0");
+      strcat(buf,");with_sqrt(");
+      strcat(buf,withsqrt(contextptr)?"1":"0");
+      strcat(buf,");");
+    }
+  #else // TICE
+    char buf[2048]="";
+    char* output = buf;
+    //dbg_printf("VARS=%s\n",g.print(contextptr).c_str());
+    if (g.type==giac::_VECT){
+      for (int i=0;i<g._VECTptr->size();++i){
+        string s((*g._VECTptr)[i].print(contextptr));
+        //dbg_printf("VAR[%i] %s\n",i,s.c_str());
+        size_t len = s.size();
+        if (output + len + 128 < buf + sizeof(buf)){
+          memcpy(output, s.c_str(), len);
+          output += len;
+          *output = ':'; output++;
+          *output = ';'; output++;
+        }
+      }
+    }
+    *output = '\0';
+    if (output + 128 < sizeof(buf) + buf){
+      ti_sprintf(
+        output, "python_compat(%d);angle_radian(%c);with_sqrt(%c);",
+        b, angle_radian(contextptr)?'1':'0', withsqrt(contextptr)?'1':'0'
+      );
+    }
+  #endif
   python_compat(b,contextptr);
-  if (strlen(buf)+128<sizeof(buf)){
-    strcat(buf,"python_compat(");
-    strcat(buf,giac::print_INT_(b).c_str());
-    strcat(buf,");angle_radian(");
-    strcat(buf,angle_radian(contextptr)?"1":"0");
-    strcat(buf,");with_sqrt(");
-    strcat(buf,withsqrt(contextptr)?"1":"0");
-    strcat(buf,");");
-  }
   //dbg_printf("khicas_state %s\n",buf);
   return buf;
 #endif

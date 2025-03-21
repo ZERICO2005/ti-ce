@@ -708,8 +708,36 @@ int inputline(const char * msg1,const char * msg2,std::string & s,bool numeric,i
     if (beg>pos)
       beg=pos;
     textX=X1;
+  #ifndef TICE
     int cursorpos=os_draw_string_medium(textX,textY,SDK_BLACK,SDK_WHITE,s.substr(beg,pos-beg).c_str(),false); // PrintMini(&textX,&textY,(Char *)s.substr(beg,pos-beg).c_str(),0x02, 0xFFFFFFFF, 0, 0, COLOR_BLACK, COLOR_WHITE, 1, 0); int cursorpos=textX;
     os_draw_string_medium(cursorpos,textY,SDK_BLACK,SDK_WHITE,s.substr(pos,s.size()-pos).c_str(),false);// PrintMini(&textX,&textY,(Char*)s.substr(pos,s.size()-pos).c_str(),0x02, 0xFFFFFFFF, 0, 0, COLOR_BLACK, COLOR_WHITE, 1, 0);
+  #else
+    int cursorpos;
+    {
+      char* const s_str = (char*)s.c_str();
+      char* s_begin = s_str + beg;
+      char* s_end = s_str + (pos - beg);
+      char s_temp = *s_end;
+      *s_end = '\0';
+      cursorpos = os_draw_string_medium(
+        textX, textY, SDK_BLACK, SDK_WHITE,
+        s_begin, false
+      );
+      *s_end = s_temp;
+    }
+    {
+      char* const s_str = (char*)s.c_str();
+      char* s_begin = s_str + (pos);
+      char* s_end = s_str + (s.size() - pos);
+      char s_temp = *s_end;
+      *s_end = '\0';
+      os_draw_string_medium(
+        cursorpos ,textY, SDK_BLACK, SDK_WHITE,
+        s_begin, false
+      );
+      *s_end = s_temp;
+    }
+  #endif
     drawRectangle(cursorpos,textY+16,3,18,COLOR_BLACK); // cursor
     Printmini(0,C58,"         |        |        |        |  A<>a  ",4);
     int keyflag = GetSetupSetting( (unsigned int)0x14);
@@ -1711,21 +1739,21 @@ bool inputdouble(const char * msg1,double & d){
       int key; ck_getkey(&key);
       Printxy(1+14*col,dy+16*row,buf,0); // undo draw char selected
       if (key==KEY_CTRL_EXIT){
-	drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);	
-	return -1;
+        drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);	
+        return -1;
       }
       if (key==KEY_CTRL_EXE){
-	drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);
-	return currc;
+        drawRectangle(0,18,LCD_WIDTH_PX,LCD_HEIGHT_PX-18,_WHITE);
+        return currc;
       }
       if (key==KEY_CTRL_LEFT)
-	--col;
+        --col;
       if (key==KEY_CTRL_RIGHT)
-	++col;
+        ++col;
       if (key==KEY_CTRL_UP)
-	--row;
+        --row;
       if (key==KEY_CTRL_DOWN)
-	++row;
+        ++row;
     }
   }
 
@@ -1950,7 +1978,7 @@ const char * trig(){
   }
 
 static constexpr int adjust_size = 12;
-#define adjust_width "%12s"
+#define adjust_width "%-12s"
 
 string adjust(const char * s,int L=adjust_size){
   int l=strlen(s);
@@ -2070,14 +2098,14 @@ void get_current_console_menu(string & menu,string & shiftmenu,string & alphamen
   constexpr size_t menu_swap_len = 15;
   char menu_swap[menu_swap_len];
   menu_save(menu_swap, menu_swap_len);
-  const int width = app==2 ? 0 : L;
+  const int width = (app==2) ? 0 : L;
   /* shiftmenu */ {
     int ret = sprintf(output,
       adjust_width "|" adjust_width "|" "%*s" "|" "%*s" "|" adjust_width,
       menu_f6,
       menu_f7,
-      width, app==2?"   zoom   ":menu_f8,
-      width, app==2?"   evalf  ":menu_f9,
+      width, (app==2)?"   zoom   ":menu_f8,
+      width, (app==2)?"   evalf  ":menu_f9,
       menu_f10
     );
     assert(ret < output_max_size);
@@ -2089,22 +2117,24 @@ void get_current_console_menu(string & menu,string & shiftmenu,string & alphamen
       adjust_width "|" adjust_width "|" "%*s" "|" "%*s" "|" adjust_width,
       menu_f11,
       menu_f12,
-      width, app==2?"   zoom   ":menu_f13,
-      width, app==2?"  regroup  ":menu_f14,
+      width, (app==2)?"   zoom   ":menu_f13,
+      width, (app==2)?"  regroup  ":menu_f14,
       menu_f15
     );
     assert(ret < output_max_size);
     alphamenu = "";
     alphamenu += output;
   }
-  if (0 && app==3){
-    menu=(lang?" outil | stat | edit | cmds | A<>a | menu":" tools | stat | edit | cmds | A<>a | menu");
+  if (0 && app==3) {
+    menu = lang
+      ? " outil | stat | edit | cmds | A<>a | menu"
+      : " tools | stat | edit | cmds | A<>a | menu";
 #ifndef FX
     menucolorbg=COLOR_ORANGE;
 #endif
     goto restore_menus;
   }
-  if (app==2){
+  if (app==2) {
     int ret = sprintf(output,
       adjust_width "| " adjust_width "|  edit sel  |   eval   |  |  copy sel  ",
       menu_f1,
@@ -2115,19 +2145,18 @@ void get_current_console_menu(string & menu,string & shiftmenu,string & alphamen
     menucolorbg=34800;
     goto restore_menus;
   }
-  if (0 && app==5){
+  if (0 && app==5) {
     menu=" point | lines | disp | cmds | A<>a | file ";
     shiftmenu="triangl|polyg|geo3d|solids|gdiff|measur";
     alphamenu="tests|analyt|cursor|transf|plots|conic";
     menucolorbg=COLOR_CYAN;
     goto restore_menus;
   }
-  if (app==1){
+  if (app==1) {
     menu=(lang==1)
       ?" if/else... | def/for... |  edition  |   char/io   |  Fichier    "
       :" if/else... | def/for... |     edit    |  char/io  |    File    ";
-  }
-  else {
+  } else {
     int ret = sprintf(output,
       adjust_width "| " adjust_width "| " adjust_width "| chartab %s",
       menu_f1,
@@ -2711,14 +2740,20 @@ int Console_GetKey(){
     
     if (key == KEY_CTRL_INS) {
       if (Current_Line<Last_Line){
-	Console_Insert_Line();
-	Console_Insert_Line();
+        Console_Insert_Line();
+        Console_Insert_Line();
       }
       else {
-	int c=chartab();
-	string s=" ";
-	if (c>32 && c<127) s[0]=char(c);
-	Console_Input((const Char *)s.c_str());
+        int c=chartab();
+        #ifndef TICE
+          string s=" ";
+          if (c>32 && c<127) s[0]=char(c);
+          Console_Input((const Char *)s.c_str());
+        #else // TICE
+          char s[] = {' ', '\0'};
+          if (c>32 && c<127) s[0]=char(c);
+          Console_Input(s);
+        #endif
       }
       Console_Disp(1);
       continue;
@@ -3169,19 +3204,20 @@ void PrintRev(const Char * s,int color=TEXT_COLOR_BLACK){
       }
       string toolt;
       if (related && strlen(related)){
-	toolt += cmdname;
-	toolt += '(';
-	if (syntax && strlen(syntax))
-	  toolt += syntax;
-	else
-	  toolt += "arg";
-	toolt += ')';
-	toolt += ' ';
-	if (related)
-	  toolt += related;
+        toolt += cmdname;
+        toolt += '(';
+        if (syntax && strlen(syntax)) {
+          toolt += syntax;
+        } else {
+          toolt += "arg";
+        }
+          toolt += ')';
+          toolt += ' ';
+        if (related)
+          toolt += related;
+      } else {
+        toolt+=examples;
       }
-      else
-	toolt+=examples;
       os_draw_string_small(x,y,_BLACK,bg,toolt.c_str(),false);
       return true;
     }

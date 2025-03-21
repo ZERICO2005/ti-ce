@@ -25,5 +25,5 @@ LIBLOAD_OPTIONAL = fileioc
 
 # ----------------------------
 
-#include $(shell cedev-config --makefile)
+include $(shell cedev-config --makefile)
 include app_tools/makefile
