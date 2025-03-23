@@ -760,9 +760,14 @@ string khicas_state(){
         string s((*g._VECTptr)[i].print(contextptr));
         //dbg_printf("VAR[%i] %s\n",i,s.c_str());
         size_t len = s.size();
-        if (output + len + 128 < buf + sizeof(buf)){
-          memcpy(output, s.c_str(), len);
-          output += len;
+        if (output + len + 128 < buf + sizeof(buf)) {
+          /* both of these inline to the same code */
+          #if 0
+            memcpy(output, s.c_str(), len);
+            output += len;
+          #else
+            output = (char*)mempcpy(output, s.c_str(), len);
+          #endif
           *output = ':'; output++;
           *output = ';'; output++;
         }
