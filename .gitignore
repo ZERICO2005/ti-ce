@@ -44,6 +44,7 @@ shared/ti/
 *.i*86
 *.x86_64
 *.hex
+app_tools/app.src
 
 # Debug files
 *.dSYM/

@@ -321,7 +321,7 @@ const char * select_var() {
 
 //const char * keywords[]={"do","faire","for","if","return","while"}; // added to lexer_tab_int.h
 
-const char * python_keywords[] = {
+constexpr char const * const python_keywords[] = {
   // List of known giac keywords...
   "False",
   "None",
@@ -348,7 +348,7 @@ const char * python_keywords[] = {
   "xor",
   "yield",
 };
-constexpr char * const python_builtins[] = {
+constexpr char const * const python_builtins[] = {
   "NoneType",
   "__call__",
   "__class__",

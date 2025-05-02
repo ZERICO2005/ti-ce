@@ -41,8 +41,7 @@ inline int my_min(int a, int b) {
   return a < b ? a : b;
 }
 
-void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, unsigned char bg, unsigned char * charptrbase, int font_w,
-                 int font_h) {
+void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, unsigned char bg, const unsigned char * charptrbase,int font_w,int font_h) {
   if (x0 >= VIR_LCD_PIX_W || y0 >= VIR_LCD_PIX_H)
     return;
   if ((ch < ' ') || (ch > '~' + 1)) {
@@ -53,12 +52,17 @@ void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, un
     return;
   }
   const unsigned char * pCh = charptrbase + (ch - ' ') * font_h;
-  int shift = my_min(font_w,VIR_LCD_PIX_W - x0); // shift>0
-  unsigned char * ptry = ti8bpp_screen + x0 + (y0 << 8) + (y0 << 6);
+  int shift = my_min(font_w, VIR_LCD_PIX_W - x0); // shift>0
+#if 1 // replace multiplication by 320=256+64 by bit operations
+  unsigned char * ptry = (unsigned char*)ti8bpp_screen + x0 + (y0 << 8) + (y0 << 6);
   int tmp = VIR_LCD_PIX_H - y0;
   if (font_h < tmp)
     tmp = font_h;
   unsigned char * ptryend = ptry + (tmp << 8) + (tmp << 6);
+#else
+  unsigned char * ptry = (unsigned char*)&ti8bpp_screen[x0 + VIR_LCD_PIX_W * y0];
+  unsigned char * ptryend = ptry + my_min(font_h, VIR_LCD_PIX_H - y0) * VIR_LCD_PIX_W;
+#endif
   for (; ptry < ptryend; ptry += VIR_LCD_PIX_W, ++pCh) {
     unsigned char * ptr = ptry;
     unsigned char * ptrend = ptr + shift;
@@ -106,7 +110,7 @@ void vGL_putString(int x0, int y0, const char * s, unsigned char fg, unsigned ch
   int font_h;
   int len = strlen(s);
   int x = 0, y = 0;
-  unsigned char * charptrbase = VGA_Ascii_7x14;
+  const unsigned char * charptrbase = VGA_Ascii_7x14;
   if (fontSize <= 16) {
     switch (fontSize) {
     case 8:
@@ -172,6 +176,17 @@ void vGL_setArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int
       //vGL_set_pixel(x,y,color);
       ti8bpp_screen[x + y * VIR_LCD_PIX_W] = color;
     }
+  }  
+#elif 1
+  unsigned int x_len = x1 - x0;
+  unsigned int y_len = y1 - y0;
+  if (x_len == 0 || x_len > VIR_LCD_PIX_W || y_len == 0 || y_len > VIR_LCD_PIX_H) {
+    return;
+  }
+  uint8_t* fill = (uint8_t*)&ti8bpp_screen[x0 + y0 * VIR_LCD_PIX_W];
+  for (; y_len --> 0;){
+    memset(fill, color, x_len);
+    fill += VIR_LCD_PIX_W;
   }
 #else
   unsigned color3 = (color << 16) | (color << 8) | color;
@@ -194,7 +209,6 @@ void vGL_setArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int
   }
 #endif
 }
-
 
 void vGL_reverseArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1) {
   if ((x0 >= VIR_LCD_PIX_W)) {
@@ -221,13 +235,7 @@ void vGL_End() {
   //boot_ClearVRAM();
   lcd_Control = 0b100100101101; // TI-OS default
   // _boot_InitializeHardware
-  asm("assume	adl = 1\n\t"
-    "call $000384\n\t"
-    : /* output */
-    : /* input */
-    : /* clobbered registers */
-  );
-  //
+  ((void(*)(void))0x000384)();
 }
 
 inline uint16_t sdk_rgb(int a, int b, int c) {
@@ -386,7 +394,7 @@ void vGL_Initialize() {
 
   // 0b000000000000000 0      00 00      1      0    0    1   0       0        1      0     011    1;
   lcd_Control = 0b100100100111; // 8bpp like graphx
-  memset(ti8bpp_screen, 127, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+  memset((unsigned char*)ti8bpp_screen, 127, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
 }
 
 

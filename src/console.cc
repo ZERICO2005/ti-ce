@@ -601,7 +601,7 @@ void printCentered(const char * text, int y) {
 
 string printint(int i) {
   char s[sizeof("-8388608")];
-  ce_sprintf(s, "%d", i);
+  boot_sprintf(s, "%d", i);
   return s;
 }
 
@@ -1488,13 +1488,13 @@ string help_insert(const char * cmdline, int & back, bool warn) {
 
 static string print_INT_(int i) {
   char c[sizeof("-8388608")];
-  ce_sprintf(c, "%d", i);
+  boot_sprintf(c, "%d", i);
   return c;
 }
 
 static string hexa_print_INT_(int i) {
   char c[sizeof("0xffffff")];
-  ce_sprintf(c, "0x%x", i);
+  boot_sprintf(c, "0x%x", i);
   return c;
 }
 
@@ -1519,14 +1519,9 @@ int chartab() {
     int currc = 32 + 16 * row + col;
     char buf[8] = {(char)(currc == 127 ? 'X' : currc), 32, 0};
     Printxy(1 + 14 * col, dy + 16 * row, buf, 1); // draw char selected
-    string s("Current ");
-    s += char(currc);
-    s += " ";
-    s += print_INT_(currc);
-    s += " ";
-    s += hexa_print_INT_(currc);
-    s += "  ";
-    Printxy(0, 16 * 10, s.c_str(),TEXT_MODE_NORMAL);
+    char s[sizeof("Current c -8388608 0xffffff  ")];
+    boot_sprintf(s, "Current %c %d 0x%x  ", char(currc), currc, currc);
+    Printxy(0,16*10,s,TEXT_MODE_NORMAL);
     // interaction
     int key;
     ck_getkey(&key);
@@ -2516,14 +2511,14 @@ const char * console_menu(int key, Char * cfg_, int active_app) {
   return 0;
 }
 
-char * Console_Make_Entry(const Char * str) {
-  char * entry = NULL;
-  entry = (char*)calloc((strlen((const char*)str) + 1), sizeof(Char*));
-  if (entry) memcpy(entry, (const char*)str, strlen((const char*)str) + 1);
-
+char *Console_Make_Entry(const Char* str)
+{
+  char* entry = NULL;
+  const size_t entry_count = strlen((const char*)str) + 1;
+  entry = (char*)calloc(entry_count, sizeof(char));
+  if (entry) memcpy(entry, (const char *)str, entry_count);
   return entry;
 }
-
 
 //Draws and runs the asked for menu.
 const char * Console_Draw_FMenu(int key, struct FMenu * menu, Char * cfg, int active_app) {

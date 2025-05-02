@@ -278,11 +278,13 @@ void save_console_state_smem(const char * filename, bool xwaspy) {
 
 int get_filename(char * filename, const char * extension) {
   lock_alpha();
+  // is this supposed to be `if (*extension != '\0')`?
   if (extension) {
     int l = strlen(extension);
     if (l && extension[l - 1] == 'y')
       handle_f5();
   }
+  // this means that `extension` has to be NULL here right?
   string str;
   int res = inputline((lang == 1) ? "EXIT ou chaine vide: annulation" : "EXIT or empty string: cancel",
                       (lang == 1) ? "Nom de fichier:" : "Filename:", str,false);

@@ -369,9 +369,9 @@ int GetSetupSetting(int k) {
 void os_wait_1ms(int ms) {
   msleep(ms); // delay(ms)?
 }
-
-double millis() {
-  return rtc_Days * 86400.0 + rtc_Hours * 3600. + rtc_Minutes * 60. + rtc_Seconds;
+double millis(){
+  // won't overflow int unless rtc_Days > 193
+  return (double)(rtc_Days * 86400u + rtc_Hours * 3600u + rtc_Minutes * 60u + rtc_Seconds);
 }
 
 int os_set_angle_unit(int mode) {
@@ -599,6 +599,7 @@ int write_file(const char * filename, const char * s, int len) {
   }
   memcpy(ptrc, s, len);
   //dbg_printf("strlen=%i len=%i ptrc[len-1]=%x\n",strlen(s),len,ptrc[len-1]);
+  /* SOMETHING NEEDS TO BE RETURNED HERE */
 #else
   //dbg_printf("tiwrite %s\n",filename);
   int h=ti_Open(var,"w");
@@ -886,9 +887,13 @@ void statuslinemsg(const char * msg, int warncolor) {
   os_fill_rect(0, 16, 154, 2,COLOR_WHITE);
 }
 
-void set_time(int h, int m) {
-  int s = rtc_Seconds, d = rtc_Days, month, year;
+void set_time(int h,int m){
+  uint8_t month;
+  uint16_t year;
+  uint8_t s = rtc_Seconds;
+  uint16_t d = rtc_Days;
   boot_GetDate(&d, &month, &year);
+
   //dbg_printf("set_time s=%i m=%i h=%i d=%i\n",s,m,h,d);
   boot_SetTime(s, m, h);
   boot_SetDate(d, month, year);

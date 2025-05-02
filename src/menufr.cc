@@ -29,7 +29,7 @@ int doMenu(Menu * menu, MenuItemIcon * icontable) {
   // returns code telling what user did. selection is on menu->selection. menu->selection starts at 1!
   int itemsStartY = menu->startY; // char Y where to start drawing the menu items. Having a title increases this by one
   int itemsHeight = menu->height;
-  int showtitle = menu->title != NULL;
+  bool showtitle = (menu->title != NULL);
   int fontwidth = 8;
   if (showtitle) {
     itemsStartY++;
@@ -55,9 +55,10 @@ int doMenu(Menu * menu, MenuItemIcon * icontable) {
     //if(menu->statusText != NULL) DefineStatusMessage(menu->statusText, 1, 0, 0);
     // Clear the area of the screen we are going to draw on
     if (0 == menu->pBaRtR) {
-      int x = fontwidth * (menu->startX - 2), y = C10 * (menu->miniMiniTitle ? itemsStartY : menu->startY) + STATUS_AREA_PX, w =
-            fontwidth * (menu->width + 2) + ((menu->scrollbar && menu->scrollout) ? C6 : 0), h = C10 * menu->height - (
-            menu->miniMiniTitle ? C10 : 0);
+      int x = fontwidth * (menu->startX - 2);
+      int y = C10 * (menu->miniMiniTitle ? itemsStartY : menu->startY) + STATUS_AREA_PX;
+      int w = fontwidth * (menu->width + 2) + ((menu->scrollbar && menu->scrollout) ? C6 : 0);
+      int h = C10 * menu->height - (menu->miniMiniTitle ? C10 : 0);
       //dbg_printf("menu clear area x=%i y=%i w=%i h=%i\n",x,y,w,h);
       int ybot = y + h;
       bool recadre = ybot > LCD_HEIGHT_PX - 8;
@@ -1449,8 +1450,7 @@ int doCatalogMenu(char * insertText, const char * title, int category, const cha
         }
         if (isopt) {
           int token = menuitems[menu.selection - 1].token;
-          *insertText = 0;
-          strcat(insertText, menuitems[menu.selection - 1].text);
+          strcpy(insertText,menuitems[menu.selection-1].text);
           return 1;
         }
         sres = KEY_CTRL_F1;

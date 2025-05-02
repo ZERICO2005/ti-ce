@@ -44,7 +44,13 @@ extern "C" {
 #define true 1
 
 #include <stdlib.h>
-
+#if 1
+  // if we find out that the OS sprintf is faster than nanoprintf, use it instead
+  #include <ti/sprintf.h>
+#else
+  // fallback
+  #define boot_sprintf sprintf
+#endif
 int convertcolor(int c);
 #define STANDALONE // don't use graphx and fileioc
 #define kb_Data (uint8_t)((volatile uint16_t*)0xF50010)
