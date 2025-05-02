@@ -1,6 +1,6 @@
 #ifndef K_DEFS_H
 #define K_DEFS_H
-  // Character codes
+// Character codes
 #define KEY_CHAR_0          0x30
 #define KEY_CHAR_1          0x31
 #define KEY_CHAR_2          0x32
@@ -89,14 +89,14 @@
 #define KEY_CHAR_Z          0x5a
 
 
-  // Control codes
+// Control codes
 #define KEY_CTRL_FORMAT     30203
 #define KEY_CTRL_NOP        30202
 #define KEY_CTRL_EXE        30201
 #define KEY_CTRL_DEL        30025
 #define KEY_CTRL_AC         30070
 #define KEY_CTRL_FD         30046
-#define KEY_CTRL_UNDO	    30045	
+#define KEY_CTRL_UNDO	    30045
 #define KEY_CTRL_XTT        30001
 #define KEY_CTRL_EXIT       5
 #define KEY_CTRL_OK       4
@@ -160,7 +160,7 @@
 #define KEY_CTRL_E 31005
 #define KEY_CTRL_H 31008 // help?
 #define KEY_CTRL_M 31011 // doc menu
-#define KEY_CTRL_N 31012 
+#define KEY_CTRL_N 31012
 #define KEY_CTRL_R 31018
 #define KEY_CTRL_S 31019
 #define KEY_CTRL_T 31020
@@ -213,7 +213,7 @@
 #define KEY_PRGM_9 54
 #define KEY_PRGM_A 76
 #define KEY_PRGM_F 26
-#define KEY_PRGM_ALPHA 77 
+#define KEY_PRGM_ALPHA 77
 #define KEY_PRGM_SHIFT 78
 #define KEY_PRGM_MENU 48
 #define KEY_CTRL_SD         39990
