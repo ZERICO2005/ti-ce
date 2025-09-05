@@ -5,7 +5,11 @@
 
 #pragma once
 #include "uios.h"
+#if 0
 #include "ustring.h"
+#else
+#include <string>
+#endif
 
 struct stat;
 

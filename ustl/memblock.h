@@ -32,7 +32,7 @@ public:
     inline const memblock&	operator= (const cmemlink& l)	{ assign (l); return (*this); }
     inline const memblock&	operator= (const memlink& l)	{ assign (l); return (*this); }
     inline const memblock&	operator= (const memblock& l)	{ assign (l); return (*this); }
-    inline void			swap (memblock& l) noexcept	{ memlink::swap (l); ::ustl::swap (m_Capacity, l.m_Capacity); }
+    inline void			swap (memblock& l) noexcept	{ memlink::swap (l); std::swap (m_Capacity, l.m_Capacity); }
     void			assign (const void* p, size_type n);
     void			reserve (size_type newSize, bool bExact = false);
     void			resize (size_type newSize, bool bExact = true);
@@ -52,7 +52,7 @@ public:
 #if HAVE_CPP11
     inline			memblock (memblock&& b)		: memlink(), m_Capacity(0) { swap (b); }
     inline memblock&		operator= (memblock&& b)	{ swap (b); return (*this); }
-    inline void			swap (memblock&& l)		{ memlink::swap (l); ::ustl::swap (m_Capacity, l.m_Capacity); }
+    inline void			swap (memblock&& l)		{ memlink::swap (l); std::swap (m_Capacity, l.m_Capacity); }
 #endif
 protected:
     virtual size_type		minimumFreeCapacity (void) const noexcept __attribute__((const));

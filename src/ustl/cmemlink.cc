@@ -6,7 +6,11 @@
 #include "cmemlink.h"
 #include "ofstream.h"
 #include "strmsize.h"
+#if 0
 #include "ualgo.h"
+#else
+#include <algorithm>
+#endif
 #include <stdio.h>
 
 namespace ustl {

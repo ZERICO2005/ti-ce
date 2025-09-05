@@ -1,12 +1,21 @@
+#if 0
 // This file is part of the uSTL library, an STL implementation.
 //
 // Copyright (c) 2005 by Mike Sharov <msharov@users.sourceforge.net>
 // This file is free software, distributed under the MIT License.
 
+#if 0
 #include "ustring.h"
+#else
+#include <string>
+#endif
 #include "mistream.h"
 #include "mostream.h"
+#if 0
 #include "ualgo.h"
+#else
+#include <algorithm>
+#endif
 #include <stdio.h>	// for vsnprintf (in string::format)
 
 namespace ustl {
@@ -404,3 +413,5 @@ void string::write (ostream& os) const
 string::size_type string::minimumFreeCapacity (void) const noexcept { return (1); }
 
 } // namespace ustl
+
+#endif

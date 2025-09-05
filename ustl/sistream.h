@@ -5,7 +5,11 @@
 
 #pragma once
 #include "mistream.h"
+#if 0
 #include "ustring.h"
+#else
+#include <string>
+#endif
 #ifndef EOF
 #define EOF (-1)
 #endif
@@ -36,8 +40,8 @@ public:
 #if HAVE_LONG_LONG && (!HAVE_INT64_T || SIZE_OF_LONG_LONG > 8)
     void			iread (long long& v);
 #endif
-    inline string		str (void) const	{ string s; s.link (*this); return (s); }
-    inline istringstream&	str (const string& s)	{ link (s); return (*this); }
+    // inline string		str (void) const	{ string s; s.link (*this); return (s); }
+    // inline istringstream&	str (const string& s)	{ link (s); return (*this); }
     inline istringstream&	get (char& c)	{ return (read (&c, sizeof(c))); }
     inline int			get (void)	{ char c = EOF; get(c); return (c); }
     istringstream&		get (char* p, size_type n, char delim = '\n');

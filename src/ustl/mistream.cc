@@ -5,8 +5,13 @@
 
 #include "mistream.h"
 #include "sostream.h"
+#if 0
 #include "ustring.h"
 #include "ualgo.h"
+#else
+#include <string>
+#include <algorithm>
+#endif
 
 namespace ustl {
 
@@ -45,7 +50,7 @@ void istream::text_write (ostringstream& os) const
 /// Reads a null-terminated string into \p str.
 void istream::read_strz (string& str)
 {
-    const_iterator zp = find (ipos(), end(), '\0');
+    const_iterator zp = std::find (ipos(), end(), '\0');
     if (zp == end())
 	zp = ipos();
     const size_type strl = distance (ipos(), zp);

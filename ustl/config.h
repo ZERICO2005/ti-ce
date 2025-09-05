@@ -194,8 +194,8 @@
 #define WITHOUT_EXCEPTIONS
 #define USTL_THROW(x) 
 typedef unsigned off_t;
-typedef unsigned size_t;
-typedef size_t ssize_t;
+// typedef unsigned size_t;
+// typedef size_t ssize_t;
 typedef unsigned mode_t ;
 //#define rint(x) int(x+.5)
 //#define calloc(nmemb, size) malloc(size*nmemb)

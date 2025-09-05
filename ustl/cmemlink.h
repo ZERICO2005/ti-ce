@@ -4,7 +4,11 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
+#if 0
 #include "ualgobase.h"
+#else
+#include <algorithm>
+#endif
 
 /// The ustl namespace contains all ustl classes and algorithms.
 namespace ustl {
@@ -54,12 +58,12 @@ public:
     inline virtual     ~cmemlink (void) noexcept			{}
     void		link (const void* p, size_type n);
     inline void		link (const cmemlink& l)	{ link (l.begin(), l.size()); }
-    inline void		link (const void* first, const void* last)	{ link (first, distance (first, last)); }
+    // inline void		link (const void* first, const void* last)	{ link (first, distance (first, last)); }
     inline void		relink (const void* p, size_type n);
     virtual void	unlink (void) noexcept		{ m_Data = NULL; m_Size = 0; }
     inline rcself_t	operator= (const cmemlink& l)	{ link (l); return (*this); }
     bool		operator== (const cmemlink& l) const noexcept;
-    inline void		swap (cmemlink& l)		{ ::ustl::swap (m_Data, l.m_Data); ::ustl::swap (m_Size, l.m_Size); }
+    inline void		swap (cmemlink& l)		{ std::swap (m_Data, l.m_Data); std::swap (m_Size, l.m_Size); }
     inline size_type	size (void) const		{ return (m_Size); }
     inline size_type	max_size (void) const		{ return (size()); }
     inline size_type	readable_size (void) const	{ return (size()); }

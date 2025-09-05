@@ -8,6 +8,10 @@
 /// stream_size_of functions return the size of the object's data that is written or
 /// read from a stream.
 
+#include "utypes.h"
+#include "typelist.h"
+#include "ulimits.h"
+
 #pragma once
 
 namespace ustl {

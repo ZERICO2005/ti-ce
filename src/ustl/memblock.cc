@@ -5,11 +5,19 @@
 
 #include "mistream.h"
 #include "memblock.h"
+#if 0
 #include "ualgo.h"
 #include "umemory.h"
+#else
+#include <algorithm>
+#include <memory>
+#endif
 #include "fstream.h"
 #include <errno.h>
 #include <ti/vars.h>
+
+#define nfree free
+#define nrealloc realloc
 
 namespace ustl {
 
@@ -71,7 +79,7 @@ void memblock::assign (const void* p, size_type n)
 {
     assert ((p != (const void*) cdata() || size() == n) && "Self-assignment can not resize");
     resize (n);
-    copy_n (const_pointer(p), n, begin());
+    std::copy_n (const_pointer(p), n, begin());
 }
 
 /// \brief Reallocates internal block to hold at least \p newSize bytes.
@@ -98,7 +106,7 @@ void memblock::reserve (size_type newSize, bool bExact)
     pointer newBlock = (pointer) nrealloc (oldBlock, newSize);
     if (!newBlock) USTL_THROW( bad_alloc (newSize));
     if (!oldBlock & (cdata() != NULL))
-      copy_n (cdata(), min (size() + 1, newSize), newBlock);
+      std::copy_n (cdata(), min (size() + 1, newSize), newBlock);
     link (newBlock, size());
     //dbg_printf("reserve %x %i\n",m_Data,m_Size);
     

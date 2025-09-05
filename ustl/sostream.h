@@ -4,13 +4,19 @@
 // This file is free software, distributed under the MIT License.
 
 #pragma once
+#if 0
 #include "ustring.h"
+#else
+#include <string>
+#endif
 #include "mostream.h"
 #include <stdio.h>
 
 namespace ustl {
 
+#if 0
 class string;
+#endif
 
 /// \class ostringstream sostream.h ustl.h
 /// \ingroup TextStreams
@@ -56,7 +62,7 @@ public:
     ostringstream&		flush (void)			{ m_Buffer.resize (pos()); return (*this); }
     virtual size_type		overflow (size_type n = 1);
 protected:
-    inline void			reserve (size_type n)		{ m_Buffer.reserve (n, false); }
+    // inline void			reserve (size_type n)		{ m_Buffer.reserve (n, false); }
     inline size_type		capacity (void) const		{ return (m_Buffer.capacity()); }
 private:
     inline void			write_strz (const char*)	{ assert (!"Writing nul characters into a text stream is not allowed"); }

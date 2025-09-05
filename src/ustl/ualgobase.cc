@@ -7,7 +7,11 @@
 #define NDEBUG
 #endif
 
+#if 0
 #include "ualgo.h"
+#else
+#include <algorithm>
+#endif
 
 namespace ustl {
 
@@ -245,11 +249,11 @@ void rotate_fast (void* first, void* middle, void* last) noexcept
 	char* f = (char*) first;
 	char* m = (char*) middle;
 	char* l = (char*) last;
-	reverse (f, m);
-	reverse (m, l);
+	std::reverse (f, m);
+	std::reverse (m, l);
 	while (f != m && m != l)
-	    iter_swap (f++, --l);
-	reverse (f, (f == m ? l : m));
+	    std::iter_swap (f++, --l);
+	std::reverse (f, (f == m ? l : m));
     }
 }
 

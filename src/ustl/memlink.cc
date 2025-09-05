@@ -4,7 +4,11 @@
 // This file is free software, distributed under the MIT License.
 
 #include "mistream.h"
+#if 0
 #include "ustdxept.h"
+#else
+#include <exception>
+#endif
 
 namespace ustl {
 
@@ -34,9 +38,9 @@ void memlink::fill (const_iterator cstart, const void* p, size_type elSize, size
     assert (cstart >= begin() && cstart + elSize * elCount <= end());
     iterator start = const_cast<iterator>(cstart);
     if (elSize == 1)
-	fill_n (start, elCount, *reinterpret_cast<const uint8_t*>(p));
+	std::fill_n (start, elCount, *reinterpret_cast<const uint8_t*>(p));
     else while (elCount--)
-	start = copy_n (const_iterator(p), elSize, start);
+	start = std::copy_n (const_iterator(p), elSize, start);
 }
 
 } // namespace ustl

@@ -5,8 +5,13 @@
 
 #include "mistream.h"	// for istream_iterator, referenced in utf8.h
 #include "sostream.h"
+#if 0
 #include "ustring.h"
 #include "ulimits.h"
+#else
+#include <string>
+#include <limits>
+#endif
 #include <stdio.h>
 
 namespace ustl {
@@ -34,14 +39,14 @@ ostringstream::ostringstream (const string& v)
   m_Precision (2)
 {
     exceptions (goodbit);
-    ostream::link (m_Buffer);
+    // ostream::link (m_Buffer);
 }
 
 /// Copies \p s to the internal buffer.
 void ostringstream::str (const string& s)
 {
     m_Buffer = s;
-    ostream::link (m_Buffer);
+    // ostream::link (m_Buffer);
     SetPos (m_Buffer.size());
 }
 
@@ -146,7 +151,7 @@ void ostringstream::link (void* p, size_type n) noexcept
 {
     assert ((p || !n) && "The output string buffer must not be read-only");
     ostream::link (p, n);
-    m_Buffer.link (p, n);
+    // m_Buffer.link (p, n);
 }
 
 /// Attempts to create more output space. Returns remaining().
@@ -154,9 +159,9 @@ ostringstream::size_type ostringstream::overflow (size_type n)
 {
     if (n > remaining()) {
 	const uoff_t oldPos (pos());
-	m_Buffer.reserve (oldPos + n, false);
+	// m_Buffer.reserve (oldPos + n, false);
 	m_Buffer.resize (oldPos + n);
-	ostream::link (m_Buffer);
+	// ostream::link (m_Buffer);
 	SetPos (oldPos);
     }
     verify_remaining ("write", "text", n);

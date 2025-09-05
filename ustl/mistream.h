@@ -5,7 +5,11 @@
 
 #pragma once
 #include "memlink.h"
+#if 0
 #include "uexception.h"
+#else
+#include <exception>
+#endif
 #include "strmsize.h"
 #include "utf8.h"
 #include "uios.h"
@@ -13,11 +17,17 @@
     #include "typeinfo.h"
 #endif
 
+#include <string>
+#include "uutility.h"
+#include "mostream.h"
+
 namespace ustl {
 
 class ostream;
 class memlink;
+#if 0
 class string;
+#endif
 
 /// \class istream mistream.h ustl.h
 /// \ingroup BinaryStreams
@@ -69,7 +79,7 @@ public:
     inline iterator	end (void) const			{ return (cmemlink::end()); }
     inline void		link (const void* p, streamsize n)	{ cmemlink::link (p, n); }
     inline void		link (const cmemlink& l)		{ cmemlink::link (l.cdata(), l.readable_size()); }
-    inline void		link (const void* f, const void* l)	{ cmemlink::link (f, l); }
+    // inline void		link (const void* f, const void* l)	{ cmemlink::link (f, l); }
     inline void		relink (const void* p, streamsize n)	{ cmemlink::relink (p, n); m_Pos = 0; }
     inline void		relink (const cmemlink& l)		{ relink (l.cdata(), l.readable_size()); }
     virtual void	unlink (void) noexcept;
@@ -89,7 +99,7 @@ public:
     inline void		read (memlink& buf)	{ read (buf.begin(), buf.writable_size()); }
     inline void get(char & c){ read(&c,1); }
     inline char get(){ char c; read(&c,1); return c;}
-    void		read_strz (string& str);
+    void		read_strz (std::string& str);
     streamsize		readsome (void* s, streamsize n);
     inline void		read (istream&)			{ }
     void		write (ostream& os) const;
@@ -271,7 +281,7 @@ inline void istream::iread (T& v)
 inline void istream::swap (istream& is)
 {
     cmemlink::swap (is);
-    ::ustl::swap (m_Pos, is.m_Pos);
+    std::swap (m_Pos, is.m_Pos);
 }
 
 /// Reads \p n bytes into \p buffer.
@@ -292,6 +302,7 @@ inline void istream::read (void* buffer, size_type n)
 template <typename T> struct object_reader {
     inline void operator()(istream& is, T& v) const { v.read (is); }
 };
+
 template <typename T> struct integral_object_reader {
     inline void operator()(istream& is, T& v) const { is.iread (v); }
 };
@@ -304,6 +315,21 @@ inline istream& operator>> (istream& is, T& v) {
 }
 template <typename T>
 inline istream& operator>> (istream& is, const T& v) { v.read (is); return (is); }
+
+template <>
+struct object_reader<std::string> {
+    inline void operator()(istream& is, std::string& v) const {
+        char szbuf [8];
+        is >> szbuf[0];
+        size_t szsz (Utf8SequenceBytes (szbuf[0]) - 1), n = 0;
+        if (!is.verify_remaining ("read", "ustl::string", szsz)) return;
+        is.read (szbuf + 1, szsz);
+        n = *utf8in(szbuf);
+        if (!is.verify_remaining ("read", "ustl::string", n)) return;
+        v.resize (n);
+        is.read (v.data(), v.size());
+    }
+};
 
 //----------------------------------------------------------------------
 

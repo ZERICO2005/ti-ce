@@ -1,2 +1,4 @@
-#include "ustl_config"
-#include <ustring.h>
+#include_next <string>
+namespace ustl {
+    using std::string;
+}

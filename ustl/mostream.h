@@ -5,7 +5,11 @@
 
 #pragma once
 #include "memlink.h"
+#if 0
 #include "uexception.h"
+#else
+#include <exception>
+#endif
 #include "utf8.h"
 #include "uios.h"
 #include "strmsize.h"
@@ -13,10 +17,15 @@
     #include "typeinfo.h"
 #endif
 
+#include <string>
+#include "uutility.h"
+
 namespace ustl {
 
 class istream;
+#if 0
 class string;
+#endif
 
 /// \class ostream mostream.h ustl.h
 /// \ingroup BinaryStreams
@@ -82,7 +91,7 @@ public:
     virtual void	unlink (void) noexcept;
     inline void		link (void* p, streamsize n)	{ memlink::link (p, n); }
     inline void		link (memlink& l)		{ memlink::link (l.data(), l.writable_size()); }
-    inline void		link (void* f, void* l)		{ memlink::link (f, l); }
+    // inline void		link (void* f, void* l)		{ memlink::link (f, l); }
     inline void		relink (void* p, streamsize n)	{ memlink::relink (p, n); m_Pos = 0; }
     inline void		relink (memlink& l)		{ relink (l.data(), l.writable_size()); }
     inline void		seekp (off_t p, seekdir d = beg);
@@ -266,7 +275,7 @@ inline void ostream::iwrite (const T& v)
 inline void ostream::swap (ostream& os)
 {
     memlink::swap (os);
-    ::ustl::swap (m_Pos, os.m_Pos);
+    std::swap (m_Pos, os.m_Pos);
 }
 
 //----------------------------------------------------------------------

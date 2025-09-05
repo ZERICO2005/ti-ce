@@ -5,7 +5,11 @@
 
 #pragma once
 #include "cmemlink.h"
+#if 0
 #include "ualgo.h"
+#else
+#include <algorithm>
+#endif
 
 namespace ustl {
 
@@ -59,8 +63,8 @@ public:
     inline void		link (void* p, size_type n)		{ cmemlink::link (p, n); }
     inline void		link (const cmemlink& l)		{ cmemlink::link (l); }
     inline void		link (memlink& l)			{ cmemlink::link (l); }
-    inline void		link (const void* first, const void* last)	{ link (first, distance (first, last)); }
-    inline void		link (void* first, void* last)		{ link (first, distance (first, last)); }
+    // inline void		link (const void* first, const void* last)	{ link (first, distance (first, last)); }
+    // inline void		link (void* first, void* last)		{ link (first, distance (first, last)); }
     inline void		relink (const void* p, size_type n)	{ cmemlink::relink (p, n); }
     inline void		relink (void* p, size_type n)		{ cmemlink::relink (p, n); }
     inline void		swap (memlink& l)			{ cmemlink::swap (l); }
@@ -78,7 +82,7 @@ inline void memlink::insert (const_iterator cstart, size_type n)
     assert (cmemlink::begin() || !n);
     assert (cstart >= begin() && cstart + n <= end());
     iterator start = const_cast<iterator>(cstart);
-    rotate (start, end() - n, end());
+    std::rotate (start, end() - n, end());
 }
 
 /// Shifts the data in the linked block from \p start + \p n to \p start.
@@ -89,7 +93,7 @@ inline void memlink::erase (const_iterator cstart, size_type n)
     assert (cmemlink::begin() || !n);
     assert (cstart >= begin() && cstart + n <= end());
     iterator start = const_cast<iterator>(cstart);
-    rotate (start, start + n, end());
+    std::rotate (start, start + n, end());
 }
 
 /// Use with memlink-derived classes to allocate and link to stack space.

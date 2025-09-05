@@ -11,8 +11,8 @@
 #ifndef STDUNIX_HEADERS
     #error "This library compiles only on UNIX systems."
 #endif
-#define __STDC_LIMIT_MACROS	// For WCHAR_MIN and WCHAR_MAX in stdint.
-#define __STDC_CONSTANT_MACROS	// For UINT??_C macros to avoid using L and UL suffixes on constants.
+// #define __STDC_LIMIT_MACROS	// For WCHAR_MIN and WCHAR_MAX in stdint.
+// #define __STDC_CONSTANT_MACROS	// For UINT??_C macros to avoid using L and UL suffixes on constants.
 #if HAVE_STDINT_H
     #include <stdint.h>
 #elif HAVE_INTTYPES_H

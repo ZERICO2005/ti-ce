@@ -4,7 +4,11 @@
 // This file is free software, distributed under the MIT License.
 #include "sistream.h"
 #include "sostream.h"
+#if 0
 #include "ustring.h"
+#else
+#include <string>
+#endif
 
 namespace ustl {
 
@@ -185,11 +189,11 @@ istringstream& istringstream::get (char* p, size_type n, char delim)
 istringstream& istringstream::getline (string& s, char delim)
 {
     char oldDelim [VectorSize(m_Delimiters)];
-    copy (VectorRange (m_Delimiters), oldDelim);
-    fill (VectorRange (m_Delimiters), '\0');
+    std::copy (VectorRange (m_Delimiters), oldDelim);
+    std::fill (VectorRange (m_Delimiters), '\0');
     m_Delimiters[0] = delim;
     iread (s);
-    copy (VectorRange (oldDelim), m_Delimiters);
+    std::copy (VectorRange (oldDelim), m_Delimiters);
     return (*this);
 }
 

@@ -15,6 +15,10 @@ namespace xcas {
 #endif
 #include <sys/lcd.h>
 
+namespace ustl {
+  
+}
+
 namespace std {
 
 using namespace ustl;

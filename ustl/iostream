@@ -2,11 +2,19 @@
 #define _IOSTREAM
 #include "mistream.h"
 #include "mostream.h"
+#if 0
 #include "ustring.h"
 #include "uvector.h"
 #include "umap.h"
+#else
+#include <string>
+#include <vector>
+#include <map>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "ustl_config"
 
 void dConsolePut(const char *);
 void dConsolePutChar(const char );
@@ -66,13 +74,13 @@ inline stdostream & operator << (stdostream & os,const char * s){
   return os;
 }
 
-inline stdostream & operator << (stdostream & os,const ustl::string & s){
+inline stdostream & operator << (stdostream & os,const std::string & s){
   dConsolePut(s.c_str());
   return os;  
 }
 
 template<class T>
-  stdostream & operator << (stdostream & os,const ustl::vector<T> & v){
+  stdostream & operator << (stdostream & os,const std::vector<T> & v){
   size_t s=v.size();
   os << "[";
   for (size_t i=0;i<s;++i){
@@ -85,9 +93,9 @@ template<class T>
 }
 
 template<class T,class U>
-  stdostream & operator << (stdostream & os,const ustl::map<T,U> & v){
+  stdostream & operator << (stdostream & os,const std::map<T,U> & v){
   os << "{";
-  typename ustl::map<T,U>::const_iterator it=v.begin(),itend=v.end();
+  typename std::map<T,U>::const_iterator it=v.begin(),itend=v.end();
   for (;it!=itend;){
     os << it->first << ":" << it->second ;
     ++it;
