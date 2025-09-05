@@ -654,7 +654,7 @@ int inputline(const char * msg1,const char * msg2,std::string & s,bool numeric,i
     if (key==KEY_CTRL_EXIT)
       return key;
     if (key==KEY_CTRL_RIGHT){
-      if (pos<s.size())
+      if (pos < s.size())
 	++pos;
       continue;
     }
@@ -735,7 +735,7 @@ int run_session(int start=0){
     Edit_Line[0]=0;
   if (v.empty()) return 0;
   //Console_Init();
-  for (int i=0;i<v.size();++i){
+  for (size_t i = 0; i < v.size(); ++i) {
     Console_Output((const Char *)v[i].c_str());
     //int j=Last_Line;
     Console_NewLine(LINE_TYPE_INPUT, 1);
@@ -1045,7 +1045,7 @@ int Console_MoveCursor(int direction){
       if (Current_Line==Last_Line)
 	editline_cursor=Cursor.x;
       //If you need to operate.
-      if ((Cursor.y < LINE_DISP_MAX - 1) && (Current_Line < Last_Line) || (Start_Line + LINE_DISP_MAX - 1 < Last_Line))
+      if (((Cursor.y < LINE_DISP_MAX - 1) && (Current_Line < Last_Line)) || (Start_Line + LINE_DISP_MAX - 1 < Last_Line))
 	{
 	  //If the current line is not read-only, then Edit_Line copy to the current line.
 	  if (!Line[Current_Line].readonly)
@@ -1116,7 +1116,7 @@ int Console_MoveCursor(int direction){
       }
     case CURSOR_SHIFT_RIGHT:
       if (!Line[Current_Line].readonly)
-	Cursor.x=min(Line[Current_Line].disp_len,COL_DISP_MAX);
+	Cursor.x=min<int>(Line[Current_Line].disp_len,COL_DISP_MAX);
       if (Line[Current_Line].disp_len > COL_DISP_MAX)
 	Line[Current_Line].start_col = Line[Current_Line].disp_len - COL_DISP_MAX;
       break;
@@ -1609,7 +1609,7 @@ const char * trig(){
       *lcdramptr=*saveptr;
     }
   }
-  char * tab[]={"","sin(","cos(","tan(","asin(","acos(","atan("};
+  const char * tab[]={"","sin(","cos(","tan(","asin(","acos(","atan("};
   return tab[k];
 }
 
@@ -1965,7 +1965,7 @@ int Console_GetKey(){
     }
 #ifdef WITH_EQW
     if (key==KEY_EQW_TEMPLATE && Current_Line==Last_Line){
-      char buf[max(GEN_PRINT_BUFSIZE,strlen(Edit_Line)+1)];
+      char buf[max<size_t>(GEN_PRINT_BUFSIZE,strlen(Edit_Line)+1)];
       strcpy(buf,(const char *)Edit_Line);
       if (buf[0]==0){
         buf[0]='0';
@@ -1983,7 +1983,7 @@ int Console_GetKey(){
       int l=Current_Line;
       bool graph=strcmp((const char *)Line[l].str,"Graphic object")==0;
       if (graph && l>0) --l;
-      char buf[max(GEN_PRINT_BUFSIZE,strlen((const char *)Line[l].str)+1)];
+      char buf[max<size_t>(GEN_PRINT_BUFSIZE,strlen((const char *)Line[l].str)+1)];
       strcpy(buf,(const char *)Line[l].str);
 #ifdef WITH_EQW
       if ( (alph || key==KEY_CTRL_RIGHT) ?textedit(buf):xcas::eqws(buf,graph /* eval */))
@@ -2544,7 +2544,7 @@ char *Console_Make_Entry(const Char* str)
 //Draws and runs the asked for menu.
 const char * Console_Draw_FMenu(int key, struct FMenu* menu,Char * cfg,int active_app)
 {
-  int i, nb_entries = 0, selector = 0, ret, longest = 0;
+  int nb_entries = 0, selector = 0, ret, longest = 0;
   unsigned int input_key;
   char quick[] = "*: ";
   constexpr const int quick_len = 2;
@@ -2558,8 +2558,11 @@ const char * Console_Draw_FMenu(int key, struct FMenu* menu,Char * cfg,int activ
   nb_entries = menu->count;
   //dbg_printf("fmenu key=%i position_number=%i menu=%s\n",key,position_number,menu->str);
 
-  for(i=0; i<nb_entries; i++)
-    if(strlen(entries[i]) > longest) longest = strlen(entries[i]);
+  for(int i = 0; i < nb_entries; i++) {
+    if (strlen(entries[i]) > longest) {
+      longest = strlen(entries[i]);
+    }
+  }
 
   // screen resolution Graph90 384x(216-24), Graph35 128x64
   // factor 3x3
@@ -2585,7 +2588,7 @@ const char * Console_Draw_FMenu(int key, struct FMenu* menu,Char * cfg,int activ
   Cursor_SetFlashOff();
 #endif
   for (;;){
-    for(i=0; i<nb_entries; i++) {
+    for(int i = 0; i < nb_entries; i++) {
       quick[0] = '0'+(i+1);
       PrintMini(3+position_x, box.bottom-7*(i+1)+2, quick, 0);
       PrintMini(3+position_x+quick_len*4, box.bottom-7*(i+1)+2, entries[i], 0);
@@ -2598,7 +2601,7 @@ const char * Console_Draw_FMenu(int key, struct FMenu* menu,Char * cfg,int activ
 
     if (input_key == KEY_CTRL_EXE) return entries[selector];
 
-    if (input_key >= KEY_CHAR_1 && input_key < KEY_CHAR_1 + nb_entries) return entries[input_key-KEY_CHAR_1];
+    if (input_key >= KEY_CHAR_1 && input_key < KEY_CHAR_1 + (unsigned int)nb_entries) return entries[input_key-KEY_CHAR_1];
 
     input_key=translate_fkey(input_key);
 
@@ -2684,14 +2687,15 @@ int Console_Init()
 
 // Loads the FMenus' data into memory, from a cfg file
 void update_fmenu(const Char * cfg){
-  int i, number=0;
+  int number = 0;
   Char temp[64] = {'\0'};
   while (*cfg){
     //Get each line
-    for (i=0 ; i+1<sizeof(temp)/sizeof(char) && (*cfg && *cfg!='\r' && *cfg!='\n'); i++,cfg++){
+    size_t i;
+    for (i = 0; i + 1 < sizeof(temp) / sizeof(char) && (*cfg && *cfg != '\r' && *cfg != '\n'); i++, cfg++) {
       temp[i] = *cfg;
     }
-    temp[i]=0;
+    temp[i] = 0;
     //If starting by 'F', adjust the number and eventually set the name of the menu
     if(temp[0] == 'F' && temp[1]>='1' && temp[1]<=('0'+18)) {
       number = temp[1]-'0' - 1;

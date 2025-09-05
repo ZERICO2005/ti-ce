@@ -41,7 +41,7 @@ inline int my_min(int a,int b){
   return a<b?a:b;
 }
 
-void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, unsigned char bg, unsigned char * charptrbase,int font_w,int font_h) {
+void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, unsigned char bg, const unsigned char * charptrbase, int font_w, int font_h) {
   if (x0>=VIR_LCD_PIX_W || y0>=VIR_LCD_PIX_H)
     return;
   if ((ch < ' ') || (ch > '~' + 1)) {
@@ -53,11 +53,11 @@ void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, un
   }
   const unsigned char * pCh = charptrbase + (ch - ' ') * font_h;
   const int shift=my_min(font_w,VIR_LCD_PIX_W-x0); // shift>0
-  unsigned char * ptry=ti8bpp_screen+x0+(y0<<8)+(y0<<6);
+  unsigned char * ptry = (unsigned char*)ti8bpp_screen + x0 + (y0 * LCD_WIDTH);
   int tmp=VIR_LCD_PIX_H-y0;
   if (font_h<tmp)
     tmp=font_h;
-  const unsigned char * ptryend=ptry+(tmp<<8)+(tmp<<6);
+  const unsigned char * ptryend = ptry + (tmp * LCD_WIDTH);
   for (;ptry<ptryend;ptry+=VIR_LCD_PIX_W,++pCh){
     unsigned char * ptr=ptry;
     unsigned char * ptrend = ptr+shift;
@@ -102,7 +102,7 @@ void vGL_putChar(unsigned int x0, unsigned int y0, char ch, unsigned char fg, un
 
 void vGL_putString(int x0, int y0, const char *s, unsigned char fg, unsigned char bg, int fontSize) {
   //dbg_printf("putstring x=%i y=%i s=%s fontSize=%i fg=%i bg=%i\n",x0,y0,s,fontSize,fg,bg);
-  unsigned char * charptrbase=VGA_Ascii_7x14;
+  const unsigned char * charptrbase = VGA_Ascii_7x14;
   if (fontSize <= 16) {
     int x = 0;
     int y = 0;
@@ -112,7 +112,7 @@ void vGL_putString(int x0, int y0, const char *s, unsigned char fg, unsigned cha
     case 8:
       font_w = 5;
       font_h = 8;
-      charptrbase= VGA_Ascii_5x8;
+      charptrbase = VGA_Ascii_5x8;
       break;
       /*
     case 12:
@@ -127,7 +127,7 @@ void vGL_putString(int x0, int y0, const char *s, unsigned char fg, unsigned cha
     case 16:
       font_w = 8;
       font_h = 16;
-      charptrbase=VGA_Ascii_8x16;
+      charptrbase = VGA_Ascii_8x16;
       break;
     default:
       font_w = 7;
@@ -136,7 +136,7 @@ void vGL_putString(int x0, int y0, const char *s, unsigned char fg, unsigned cha
     }
     
     while (*s) {
-      vGL_putChar(x0 + x, y0 + y, *s, fg, bg, charptrbase,font_w,font_h);
+      vGL_putChar(x0 + x, y0 + y, *s, fg, bg, charptrbase, font_w, font_h);
       s++;
       x += font_w;
       if (x > VIR_LCD_PIX_W) {
@@ -175,13 +175,13 @@ void vGL_setArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int
     }
   }  
 #else
-  const unsigned color3=(color<<16)|(color<<8)|color;
-  for (int y = y0; y < y1; y++){
-    unsigned char * ptr=ti8bpp_screen+x0+y*VIR_LCD_PIX_W,*ptrend=ptr+x1-x0;
+  const unsigned int color3=(color<<16)|(color<<8)|color;
+  for (unsigned int y = y0; y < y1; y++){
+    unsigned char * ptr = (unsigned char*)ti8bpp_screen + x0 + y * VIR_LCD_PIX_W, *ptrend = ptr + x1 - x0;
     ptrend-=2;
     for (; ptr<ptrend; ptr+=3) {
       //vGL_set_pixel(x,y,color);
-      *(unsigned *) ptr = color3;
+      *(unsigned int *) ptr = color3;
     }
     ptrend +=2;
     if (ptr<ptrend){
@@ -210,8 +210,8 @@ void vGL_reverseArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned
     if ((y1 >= VIR_LCD_PIX_H)) {
         y1 = VIR_LCD_PIX_H - 1;
     }
-    for (int y = y0; y < y1; y++){
-      for (int x = x0; x < x1; x++) {
+    for (unsigned int y = y0; y < y1; y++){
+      for (unsigned int x = x0; x < x1; x++) {
         ti8bpp_screen[x + y * VIR_LCD_PIX_W] = ~ti8bpp_screen[x + y * VIR_LCD_PIX_W];
       }
     }
@@ -381,7 +381,7 @@ void vGL_Initialize() {
 
   // 0b000000000000000 0      00 00      1      0    0    1   0       0        1      0     011    1;
   lcd_Control = 0b100100100111; // 8bpp like graphx
-  memset(ti8bpp_screen, 127, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+  memset((unsigned char*)ti8bpp_screen, 127, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
 }
 
 
