@@ -1,1 +1,2 @@
+#include "ustl_config"
 #include <ustring.h>

@@ -11,9 +11,7 @@
 #include "menuGUI.h"
 #include "textGUI.h"
 #include "console.h"
-#if !defined std
-#define std ustl
-#endif
+
 using namespace std;
 
 void fix_f(int & key){

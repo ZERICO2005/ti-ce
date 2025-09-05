@@ -1,5 +1,6 @@
 #ifdef TICE
 #include_next <cmath>
+
 #else
 namespace std {
 #include <math.h>

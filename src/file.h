@@ -4,7 +4,7 @@
 #include "menuGUI.h"
 
 #include <string>
-#define std ustl
+
 std::string detokenize(const unsigned char * ptr,int len);
 std::string get_tivar(const char * varname);
 // source==s, target=t, returns size

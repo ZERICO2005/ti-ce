@@ -2,9 +2,7 @@
 #define __TEXTGUI_H
 #include <string>
 #include <vector>
-#if !defined std
-#define std ustl
-#endif
+
 typedef char Char;
 
 const Char *toksplit(const Char *src, /* Source of tokens */

@@ -10,9 +10,7 @@
 #include "calc.h"
 #include <string>
 #include <vector>
-#if !defined std
-#define std ustl
-#endif
+
 typedef char Char;
 
 // #include <ce_sprintf.h>

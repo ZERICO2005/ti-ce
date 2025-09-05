@@ -10,9 +10,7 @@
 #include "file.h"
 #include "main.h"
 #include <sys/lcd.h>
-#if !defined std
-#define std ustl
-#endif
+
 using namespace std;
 
 //typedef scrollbar TScrollbar;

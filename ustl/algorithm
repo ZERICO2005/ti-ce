@@ -1,1 +1,33 @@
+#pragma once
+
 #include <ualgo.h>
+#include <uheap.h>
+// #include <umultimap.h>
+
+namespace ustl {
+
+template <class _Tp, class _Compare> inline constexpr
+const _Tp& max(const _Tp& __a, const _Tp& __b, _Compare __comp)
+{
+    return __comp(__a, __b) ? __b : __a;
+}
+
+template <class _Tp> inline constexpr
+const _Tp& max(const _Tp& __a, const _Tp& __b)
+{
+    return (__a < __b) ? __b : __a;
+}
+
+template <class _Tp, class _Compare> inline constexpr
+const _Tp& min(const _Tp& __a, const _Tp& __b, _Compare __comp)
+{
+    return __comp(__a, __b) ? __a : __b;
+}
+
+template <class _Tp> inline constexpr
+const _Tp& min(const _Tp& __a, const _Tp& __b)
+{
+    return (__a < __b) ? __a : __b;
+}
+
+}

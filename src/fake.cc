@@ -32,8 +32,8 @@ extern "C" const char * const * mp_vars(){
 
 int get_free_memory(){ return 2048; }
 
-ustl::vector<logo_turtle> & turtle_stack(){
-  static ustl::vector<logo_turtle> * ptr=new ustl::vector<logo_turtle>;
+std::vector<logo_turtle> & turtle_stack(){
+  static std::vector<logo_turtle> * ptr = new std::vector<logo_turtle>;
   return *ptr;
 }
 

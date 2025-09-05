@@ -1,6 +1,8 @@
 #include <cmath>
 #include <string>
 #include <cstdio>
+#include <vector>
+#include <algorithm>
 #include "console.h"
 #include "menuGUI.h"
 #include "textGUI.h"
@@ -12,9 +14,13 @@ namespace xcas {
 }
 #endif
 #include <sys/lcd.h>
-#if !defined std
-#define std ustl
-#endif
+
+namespace std {
+
+using namespace ustl;
+
+}
+
 using namespace std;
 
 #ifdef XLIGHT
@@ -1116,7 +1122,7 @@ int Console_MoveCursor(int direction){
       }
     case CURSOR_SHIFT_RIGHT:
       if (!Line[Current_Line].readonly)
-	Cursor.x=min<int>(Line[Current_Line].disp_len,COL_DISP_MAX);
+	Cursor.x=std::min<int>(Line[Current_Line].disp_len,COL_DISP_MAX);
       if (Line[Current_Line].disp_len > COL_DISP_MAX)
 	Line[Current_Line].start_col = Line[Current_Line].disp_len - COL_DISP_MAX;
       break;
@@ -1684,7 +1690,7 @@ const char * trig(){
       const int c=chartab();
       if (c<0) return "";
       (*sptr)[0] = (c<32 || c==127)?0:char(c);
-      return *sptr; // ":=";
+      return (*sptr).c_str(); // ":=";
     }
     case KEY_CHAR_COMMA:
       // if (keyflag==1) return "solve(";
@@ -1965,7 +1971,7 @@ int Console_GetKey(){
     }
 #ifdef WITH_EQW
     if (key==KEY_EQW_TEMPLATE && Current_Line==Last_Line){
-      char buf[max<size_t>(GEN_PRINT_BUFSIZE,strlen(Edit_Line)+1)];
+      char buf[std::max<size_t>(GEN_PRINT_BUFSIZE,strlen(Edit_Line)+1)];
       strcpy(buf,(const char *)Edit_Line);
       if (buf[0]==0){
         buf[0]='0';
@@ -1983,7 +1989,7 @@ int Console_GetKey(){
       int l=Current_Line;
       bool graph=strcmp((const char *)Line[l].str,"Graphic object")==0;
       if (graph && l>0) --l;
-      char buf[max<size_t>(GEN_PRINT_BUFSIZE,strlen((const char *)Line[l].str)+1)];
+      char buf[std::max<size_t>(GEN_PRINT_BUFSIZE,strlen((const char *)Line[l].str)+1)];
       strcpy(buf,(const char *)Line[l].str);
 #ifdef WITH_EQW
       if ( (alph || key==KEY_CTRL_RIGHT) ?textedit(buf):xcas::eqws(buf,graph /* eval */))
@@ -2214,7 +2220,7 @@ int Console_GetKey(){
           }
 #ifdef WITH_PERIODIC
           if (smallmenu.selection == 16)
-            return Console_Input(run_periodic_table());
+            return Console_Input(run_periodic_table().c_str());
 #ifdef WITH_SHEET
           if (smallmenu.selection == 17){
             sheet();

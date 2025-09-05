@@ -3,9 +3,7 @@
 #include "dbg.h"
 #include <vector>
 #include <string>
-#if !defined std
-#define std ustl
-#endif
+
 #define GEN_PRINT_BUFSIZE 1024
 #ifdef XLIGHT
 #ifdef FRANCAIS
