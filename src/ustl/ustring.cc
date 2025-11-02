@@ -371,7 +371,7 @@ size_t string::stream_size (void) const noexcept
 }
 
 /// Reads the object from stream \p os
-void string::read (istream& is)
+void string::read (USTL_istream& is)
 {
     char szbuf [8];
     is >> szbuf[0];
@@ -385,7 +385,7 @@ void string::read (istream& is)
 }
 
 /// Writes the object to stream \p os
-void string::write (ostream& os) const
+void string::write (USTL_ostream& os) const
 {
     const written_size_type sz (size());
     assert (sz == size() && "No support for writing strings larger than 4G");

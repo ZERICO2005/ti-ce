@@ -10,8 +10,8 @@ namespace ustl {
 
 class file_exception;
 
-const char endl = '\n';		///< End of line character.
-const char ends = '\0';		///< End of string character.
+// const char endl = '\n';		///< End of line character.
+// const char ends = '\0';		///< End of string character.
 
 /// Defines types and constants used by all stream classes.
 class ios_base {

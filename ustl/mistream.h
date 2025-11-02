@@ -23,17 +23,17 @@
 
 namespace ustl {
 
-class ostream;
+class USTL_ostream;
 class memlink;
 #if 0
 class string;
 #endif
 
-/// \class istream mistream.h ustl.h
+/// \class USTL_istream mistream.h ustl.h
 /// \ingroup BinaryStreams
 ///
 /// \brief Helper class to read packed binary streams.
-/// 
+///
 /// This class contains a set of functions to read integral types from an
 /// unstructured memory block. Unpacking binary file data can be done this
 /// way, for instance. aligning the data is your responsibility, and can
@@ -45,10 +45,10 @@ class string;
 /// debug builds). Oh, and don't be intimidated by the size of the inlines
 /// here. In the assembly code the compiler will usually chop everything down
 /// to five instructions each.
-/// 
+///
 /// Alignment rules for your objects:
 ///	- Assume your writes start off 4-byte aligned.
-///	- After completion, \ref istream::align the stream to at least 4.
+///	- After completion, \ref USTL_istream::align the stream to at least 4.
 ///	- If data portability between 32bit and 64bit platforms is important
 ///	(it often is not, in config files and the like), ensure you are always
 ///	using fixed-size types and are aligning to a fixed grain. Avoid writing
@@ -58,24 +58,24 @@ class string;
 ///	array of uint16_t-sized objects may leave the stream uint16_t aligned
 ///	as long as you know about it and will default-align the stream after
 ///	writing the array (note: \ref vector will already do this for you)
-/// 
+///
 /// Example code:
 /// \code
 ///     memblock b;
 ///     b.read_file ("test.file");
-///     ostream is (b);
+///     USTL_ostream is (b);
 ///     is >> boolVar >> ios::talign<int>();
 ///     is >> intVar >> floatVar;
 ///     is.read (binaryData, binaryDataSize);
 ///     is.align();
 /// \endcode
 ///
-class istream : public cmemlink, public ios_base {
+class USTL_istream : public cmemlink, public ios_base {
 public:
-    inline		istream (void);
-    inline		istream (const void* p, streamsize n);
-    inline explicit	istream (const cmemlink& source);
-    explicit		istream (const ostream& source) noexcept;
+    inline		USTL_istream (void);
+    inline		USTL_istream (const void* p, streamsize n);
+    inline explicit	USTL_istream (const cmemlink& source);
+    explicit		USTL_istream (const USTL_ostream& source) noexcept;
     inline iterator	end (void) const			{ return (cmemlink::end()); }
     inline void		link (const void* p, streamsize n)	{ cmemlink::link (p, n); }
     inline void		link (const cmemlink& l)		{ cmemlink::link (l.cdata(), l.readable_size()); }
@@ -94,16 +94,16 @@ public:
     inline bool		verify_remaining (const char* op, const char* type, streamsize n);
     inline streamsize	align_size (streamsize grain = c_DefaultAlignment) const;
     inline void		align (streamsize grain = c_DefaultAlignment);
-    inline void		swap (istream& is);
+    inline void		swap (USTL_istream& is);
     inline void		read (void* buffer, streamsize size);
     inline void		read (memlink& buf)	{ read (buf.begin(), buf.writable_size()); }
     inline void get(char & c){ read(&c,1); }
     inline char get(){ char c; read(&c,1); return c;}
     void		read_strz (std::string& str);
     streamsize		readsome (void* s, streamsize n);
-    inline void		read (istream&)			{ }
-    void		write (ostream& os) const;
-    void		text_write (ostringstream& os) const;
+    inline void		read (USTL_istream&)			{ }
+    void		write (USTL_ostream& os) const;
+    void		text_write (USTL_ostringstream& os) const;
     inline streamsize	stream_size (void) const	{ return (remaining()); }
     template <typename T>
     inline void		iread (T& v);
@@ -111,7 +111,7 @@ public:
     inline off_t	tellg (void) const	{ return (pos()); }
     inline void		seekg (off_t p, seekdir d = beg);
 private:
-    streamoff		m_Pos;		///< The current read position.
+    std::streamoff		m_Pos;		///< The current read position.
 };
 
 //----------------------------------------------------------------------
@@ -119,20 +119,20 @@ private:
 template <typename T, typename Stream>
 inline streamsize required_stream_size (T, const Stream&) { return (1); }
 template <typename T>
-inline streamsize required_stream_size (T v, const istream&) { return (stream_size_of(v)); }
+inline streamsize required_stream_size (T v, const USTL_istream&) { return (stream_size_of(v)); }
 
 template <typename Stream>
 inline bool stream_at_eof (const Stream& stm)	{ return (stm.eof()); }
 template <>
-inline bool stream_at_eof (const istream&)	{ return (false); }
+inline bool stream_at_eof (const USTL_istream&)	{ return (false); }
 
-/// \class istream_iterator
+/// \class USTL_istream_iterator
 /// \ingroup BinaryStreamIterators
 ///
-/// \brief An iterator over an istream to use with uSTL algorithms.
+/// \brief An iterator over an USTL_istream to use with uSTL algorithms.
 ///
-template <typename T, typename Stream = istream>
-class istream_iterator {
+template <typename T, typename Stream = USTL_istream>
+class USTL_istream_iterator {
 public:
     typedef T			value_type;
     typedef ptrdiff_t		difference_type;
@@ -140,21 +140,21 @@ public:
     typedef const value_type&	reference;
     typedef typename Stream::size_type	size_type;
 public:
-				istream_iterator (void)		: m_pis (NULL), m_v() {}
-    explicit			istream_iterator (Stream& is)	: m_pis (&is), m_v() { Read(); }
- 				istream_iterator (const istream_iterator& i)	: m_pis (i.m_pis), m_v (i.m_v) {}
+				USTL_istream_iterator (void)		: m_pis (NULL), m_v() {}
+    explicit			USTL_istream_iterator (Stream& is)	: m_pis (&is), m_v() { Read(); }
+ 				USTL_istream_iterator (const USTL_istream_iterator& i)	: m_pis (i.m_pis), m_v (i.m_v) {}
     /// Reads and returns the next value.
     inline const T&		operator* (void)	{ return (m_v); }
-    inline istream_iterator&	operator++ (void)	{ Read(); return (*this); }
-    inline istream_iterator&	operator-- (void)	{ m_pis->seek (m_pis->pos() - 2 * stream_size_of(m_v)); return (operator++()); }
-    inline istream_iterator	operator++ (int)	{ istream_iterator old (*this); operator++(); return (old); }
-    inline istream_iterator	operator-- (int)	{ istream_iterator old (*this); operator--(); return (old); }
-    inline istream_iterator&	operator+= (streamsize n)	{ while (n--) operator++(); return (*this); }
-    inline istream_iterator&	operator-= (streamsize n)	{ m_pis->seek (m_pis->pos() - (n + 1) * stream_size_of(m_v)); return (operator++()); }
-    inline istream_iterator	operator- (streamoff n) const			{ istream_iterator result (*this); return (result -= n); }
-    inline difference_type	operator- (const istream_iterator& i) const	{ return (distance (i.m_pis->pos(), m_pis->pos()) / stream_size_of(m_v)); }
-    inline bool			operator== (const istream_iterator& i) const	{ return ((!m_pis && !i.m_pis) || (m_pis && i.m_pis && m_pis->pos() == i.m_pis->pos())); }
-    inline bool			operator< (const istream_iterator& i) const	{ return (!i.m_pis || (m_pis && m_pis->pos() < i.m_pis->pos())); }
+    inline USTL_istream_iterator&	operator++ (void)	{ Read(); return (*this); }
+    inline USTL_istream_iterator&	operator-- (void)	{ m_pis->seek (m_pis->pos() - 2 * stream_size_of(m_v)); return (operator++()); }
+    inline USTL_istream_iterator	operator++ (int)	{ USTL_istream_iterator old (*this); operator++(); return (old); }
+    inline USTL_istream_iterator	operator-- (int)	{ USTL_istream_iterator old (*this); operator--(); return (old); }
+    inline USTL_istream_iterator&	operator+= (streamsize n)	{ while (n--) operator++(); return (*this); }
+    inline USTL_istream_iterator&	operator-= (streamsize n)	{ m_pis->seek (m_pis->pos() - (n + 1) * stream_size_of(m_v)); return (operator++()); }
+    inline USTL_istream_iterator	operator- (std::streamoff n) const			{ USTL_istream_iterator result (*this); return (result -= n); }
+    inline difference_type	operator- (const USTL_istream_iterator& i) const	{ return (distance (i.m_pis->pos(), m_pis->pos()) / stream_size_of(m_v)); }
+    inline bool			operator== (const USTL_istream_iterator& i) const	{ return ((!m_pis && !i.m_pis) || (m_pis && i.m_pis && m_pis->pos() == i.m_pis->pos())); }
+    inline bool			operator< (const USTL_istream_iterator& i) const	{ return (!i.m_pis || (m_pis && m_pis->pos() < i.m_pis->pos())); }
 private:
     void Read (void)
     {
@@ -180,28 +180,28 @@ private:
 /// A stream attached to nothing is not usable. Call Link() functions
 /// inherited from cmemlink to attach to some memory block.
 ///
-inline istream::istream (void)
+inline USTL_istream::USTL_istream (void)
 : cmemlink (),
   m_Pos (0)
 {
 }
 
 /// Attaches the stream to a block at \p p of size \p n.
-inline istream::istream (const void* p, streamsize n)
+inline USTL_istream::USTL_istream (const void* p, streamsize n)
 : cmemlink (p, n),
   m_Pos (0)
 {
 }
 
 /// Attaches to the block pointed to by \p source.
-inline istream::istream (const cmemlink& source)
+inline USTL_istream::USTL_istream (const cmemlink& source)
 : cmemlink (source),
   m_Pos (0)
 {
 }
 
 /// Checks that \p n bytes are available in the stream, or else throws.
-inline bool istream::verify_remaining (const char* op, const char* type, streamsize n)
+inline bool USTL_istream::verify_remaining (const char* op, const char* type, streamsize n)
 {
     const streamsize rem = remaining();
     bool enough = n <= rem;
@@ -210,7 +210,7 @@ inline bool istream::verify_remaining (const char* op, const char* type, streams
 }
 
 /// Sets the current read position to \p newPos
-inline void istream::seek (uoff_t newPos)
+inline void USTL_istream::seek (uoff_t newPos)
 {
 #if WANT_STREAM_BOUNDS_CHECKING
     if (newPos > size())
@@ -222,13 +222,13 @@ inline void istream::seek (uoff_t newPos)
 }
 
 /// Sets the current read position to \p newPos
-inline void istream::iseek (const_iterator newPos)
+inline void USTL_istream::iseek (const_iterator newPos)
 {
     seek (distance (begin(), newPos));
 }
 
 /// Sets the current write position to \p p based on \p d.
-inline void istream::seekg (off_t p, seekdir d)
+inline void USTL_istream::seekg (off_t p, seekdir d)
 {
     switch (d) {
 	case beg:	seek (p); break;
@@ -238,33 +238,33 @@ inline void istream::seekg (off_t p, seekdir d)
 }
 
 /// Skips \p nBytes without reading them.
-inline void istream::skip (streamsize nBytes)
+inline void USTL_istream::skip (streamsize nBytes)
 {
     seek (pos() + nBytes);
 }
 
 /// Returns the number of bytes to skip to be aligned on \p grain.
-inline streamsize istream::align_size (streamsize grain) const
+inline streamsize USTL_istream::align_size (streamsize grain) const
 {
     return (Align (pos(), grain) - pos());
 }
 
 /// Returns \c true if the read position is aligned on \p grain
-inline bool istream::aligned (streamsize grain) const
+inline bool USTL_istream::aligned (streamsize grain) const
 {
     assert (uintptr_t(begin()) % grain == 0 && "Streams should be attached aligned at the maximum element grain to avoid bus errors.");
     return (pos() % grain == 0);
 }
 
 /// aligns the read position on \p grain
-inline void istream::align (streamsize grain)
+inline void USTL_istream::align (streamsize grain)
 {
     seek (Align (pos(), grain));
 }
 
 /// Reads type T from the stream via a direct pointer cast.
 template <typename T>
-inline void istream::iread (T& v)
+inline void USTL_istream::iread (T& v)
 {
     assert (aligned (stream_align_of (v)));
 #if WANT_STREAM_BOUNDS_CHECKING
@@ -278,14 +278,14 @@ inline void istream::iread (T& v)
 }
 
 /// Swaps contents with \p is
-inline void istream::swap (istream& is)
+inline void USTL_istream::swap (USTL_istream& is)
 {
     cmemlink::swap (is);
     std::swap (m_Pos, is.m_Pos);
 }
 
 /// Reads \p n bytes into \p buffer.
-inline void istream::read (void* buffer, size_type n)
+inline void USTL_istream::read (void* buffer, size_type n)
 {
 #if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("read", "binary data", n))
@@ -300,44 +300,46 @@ inline void istream::read (void* buffer, size_type n)
 //----------------------------------------------------------------------
 
 template <typename T> struct object_reader {
-    inline void operator()(istream& is, T& v) const { v.read (is); }
+    inline void operator()(USTL_istream& is, T& v) const { v.read (is); }
 };
 
 template <typename T> struct integral_object_reader {
-    inline void operator()(istream& is, T& v) const { is.iread (v); }
+    inline void operator()(USTL_istream& is, T& v) const { is.iread (v); }
 };
 template <typename T>
-inline istream& operator>> (istream& is, T& v) {
+inline USTL_istream& operator>> (USTL_istream& is, T& v) {
     typedef typename tm::Select <numeric_limits<T>::is_integral,
 	integral_object_reader<T>, object_reader<T> >::Result object_reader_t;
     object_reader_t()(is, v);
     return (is);
 }
 template <typename T>
-inline istream& operator>> (istream& is, const T& v) { v.read (is); return (is); }
+inline USTL_istream& operator>> (USTL_istream& is, const T& v) { (void)v; return (is); }
 
 template <>
 struct object_reader<std::string> {
-    inline void operator()(istream& is, std::string& v) const {
-        char szbuf [8];
-        is >> szbuf[0];
-        size_t szsz (Utf8SequenceBytes (szbuf[0]) - 1), n = 0;
-        if (!is.verify_remaining ("read", "ustl::string", szsz)) return;
-        is.read (szbuf + 1, szsz);
-        n = *utf8in(szbuf);
-        if (!is.verify_remaining ("read", "ustl::string", n)) return;
-        v.resize (n);
-        is.read (v.data(), v.size());
+    inline void operator()(USTL_istream& is, std::string& v) const {
+        // char szbuf [8];
+        // is >> szbuf[0];
+        // size_t szsz (Utf8SequenceBytes (szbuf[0]) - 1), n = 0;
+        // if (!is.verify_remaining ("read", "ustl::string", szsz)) return;
+        // is.read (szbuf + 1, szsz);
+        // n = *utf8in(szbuf);
+        // if (!is.verify_remaining ("read", "ustl::string", n)) return;
+        // v.resize (n);
+        // is.read (v.data(), v.size());
+        (void)is;
+        (void)v;
     }
 };
 
 //----------------------------------------------------------------------
 
-typedef istream_iterator<utf8subchar_t> istream_iterator_for_utf8;
+typedef USTL_istream_iterator<utf8subchar_t> istream_iterator_for_utf8;
 typedef utf8in_iterator<istream_iterator_for_utf8> utf8istream_iterator;
 
 /// Returns a UTF-8 adaptor reading from \p is.
-inline utf8istream_iterator utf8in (istream& is)
+inline utf8istream_iterator utf8in (USTL_istream& is)
 {
     istream_iterator_for_utf8 si (is);
     return (utf8istream_iterator (si));

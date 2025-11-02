@@ -1,7 +1,5 @@
 #ifndef _IOSTREAM
 #define _IOSTREAM
-#include "mistream.h"
-#include "mostream.h"
 #if 0
 #include "ustring.h"
 #include "uvector.h"
@@ -13,6 +11,19 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+
+namespace std {
+static std::ostream & operator << (std::ostream & os, const char* str){
+  (void)str;
+  return os;
+}
+static std::ostream & operator << (std::ostream & os, char ch){
+  (void)ch;
+  return os;
+}
+constexpr char endl = '\n';
+constexpr char ends = '\0';
+}
 
 #include "ustl_config"
 
@@ -76,7 +87,7 @@ inline stdostream & operator << (stdostream & os,const char * s){
 
 inline stdostream & operator << (stdostream & os,const std::string & s){
   dConsolePut(s.c_str());
-  return os;  
+  return os;
 }
 
 template<class T>

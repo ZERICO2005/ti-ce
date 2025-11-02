@@ -17,8 +17,8 @@
 namespace ustl {
 
 /// Creates an output string stream linked to the given memory area.
-ostringstream::ostringstream (void* p, size_t n) noexcept
-: ostream (),
+USTL_ostringstream::USTL_ostringstream (void* p, size_t n) noexcept
+: USTL_ostream (),
   m_Buffer (),
   m_Flags (0),
   m_Width (0),
@@ -30,8 +30,8 @@ ostringstream::ostringstream (void* p, size_t n) noexcept
 }
 
 /// Creates an output string stream, initializing the buffer with v.
-ostringstream::ostringstream (const string& v)
-: ostream (),
+USTL_ostringstream::USTL_ostringstream (const string& v)
+: USTL_ostream (),
   m_Buffer (v),
   m_Flags (0),
   m_Width (0),
@@ -39,35 +39,35 @@ ostringstream::ostringstream (const string& v)
   m_Precision (2)
 {
     exceptions (goodbit);
-    // ostream::link (m_Buffer);
+    // USTL_ostream::link (m_Buffer);
 }
 
 /// Copies \p s to the internal buffer.
-void ostringstream::str (const string& s)
+void USTL_ostringstream::str (const string& s)
 {
     m_Buffer = s;
-    // ostream::link (m_Buffer);
+    // USTL_ostream::link (m_Buffer);
     SetPos (m_Buffer.size());
 }
 
 /// Writes a single character into the stream.
-void ostringstream::iwrite (uint8_t v)
+void USTL_ostringstream::iwrite (uint8_t v)
 {
     if (remaining() >= 1 || overflow() >= 1)
-	ostream::iwrite (v);
+	USTL_ostream::iwrite (v);
 }
 
 /// Writes the contents of \p buffer of \p size into the stream.
-ostringstream& ostringstream::write (const void* buffer, size_type sz)
+USTL_ostringstream& USTL_ostringstream::write (const void* buffer, size_type sz)
 {
     const char* buf = (const char*) buffer;
     for (size_type bw = 0; (bw = min(sz, remaining() ? remaining() : overflow(sz))); buf += bw, sz -= bw)
-	ostream::write (buf, bw);
+	USTL_ostream::write (buf, bw);
     return (*this);
 }
 
 /// Simple decimal encoding of \p n into \p fmt.
-inline char* ostringstream::encode_dec (char* fmt, uint32_t n) const noexcept
+inline char* USTL_ostringstream::encode_dec (char* fmt, uint32_t n) const noexcept
 {
     do {
 	*fmt++ = '0' + n % 10;
@@ -76,7 +76,7 @@ inline char* ostringstream::encode_dec (char* fmt, uint32_t n) const noexcept
 }
 
 /// Generates a sprintf format string for the given type.
-void ostringstream::fmtstring (char* fmt, const char* typestr, bool bInteger) const
+void USTL_ostringstream::fmtstring (char* fmt, const char* typestr, bool bInteger) const
 {
     *fmt++ = '%';
     if (m_Width)
@@ -102,7 +102,7 @@ void ostringstream::fmtstring (char* fmt, const char* typestr, bool bInteger) co
 }
 
 /// Writes \p v into the stream as utf8
-void ostringstream::iwrite (wchar_t v)
+void USTL_ostringstream::iwrite (wchar_t v)
 {
     char buffer [8];
     *utf8out(buffer) = v;
@@ -110,14 +110,14 @@ void ostringstream::iwrite (wchar_t v)
 }
 
 /// Writes value \p v into the stream as text.
-void ostringstream::iwrite (bool v)
+void USTL_ostringstream::iwrite (bool v)
 {
     static const char tf[2][8] = { "false", "true" };
     write (tf[v], 5 - v);
 }
 
 /// Equivalent to a vsprintf on the string.
-int ostringstream::vformat (const char* fmt, va_list args)
+int USTL_ostringstream::vformat (const char* fmt, va_list args)
 {
 #if HAVE_VA_COPY
     va_list args2;
@@ -137,7 +137,7 @@ int ostringstream::vformat (const char* fmt, va_list args)
 }
 
 /// Equivalent to a sprintf on the string.
-int ostringstream::format (const char* fmt, ...)
+int USTL_ostringstream::format (const char* fmt, ...)
 {
     va_list args;
     va_start (args, fmt);
@@ -147,21 +147,21 @@ int ostringstream::format (const char* fmt, ...)
 }
 
 /// Links to string \p l as resizable.
-void ostringstream::link (void* p, size_type n) noexcept
+void USTL_ostringstream::link (void* p, size_type n) noexcept
 {
     assert ((p || !n) && "The output string buffer must not be read-only");
-    ostream::link (p, n);
+    USTL_ostream::link (p, n);
     // m_Buffer.link (p, n);
 }
 
 /// Attempts to create more output space. Returns remaining().
-ostringstream::size_type ostringstream::overflow (size_type n)
+USTL_ostringstream::size_type USTL_ostringstream::overflow (size_type n)
 {
     if (n > remaining()) {
 	const uoff_t oldPos (pos());
 	// m_Buffer.reserve (oldPos + n, false);
 	m_Buffer.resize (oldPos + n);
-	// ostream::link (m_Buffer);
+	// USTL_ostream::link (m_Buffer);
 	SetPos (oldPos);
     }
     verify_remaining ("write", "text", n);

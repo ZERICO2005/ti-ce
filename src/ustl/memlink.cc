@@ -13,7 +13,7 @@
 namespace ustl {
 
 /// Reads the object from stream \p s
-void memlink::read (istream& is)
+void memlink::read (USTL_istream& is)
 {
     written_size_type n = 0;
     is >> n;

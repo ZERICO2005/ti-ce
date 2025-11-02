@@ -2,23 +2,28 @@
 #ifndef K_CSDK_H
 #define K_CSDK_H
 #include "k_defs.h"
-// Defaults parameters do not work if included from C 
+// Defaults parameters do not work if included from C
 #define SDK_BLACK 0
 #define SDK_WHITE 65535
 // C58 is the pixel y coordinate where soft keys menus legends are written
 #define C24 24
-#define C18 18 
-#define C10 18 
-#define C6 6 
+#define C18 18
+#define C10 18
+#define C6 6
 #define COLOR_SELECTED 52857 // ((15<<11)|(15<<5)|15)
 
 #define LCD_WIDTH_PX 320
 #define LCD_HEIGHT_PX 240
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "stdio.h"
+
 
 #define C58 214
 #define COLOR_WHITE SDK_WHITE
@@ -40,10 +45,6 @@ extern "C" {
 #define TEXT_MODE_NORMAL 0
 #define TEXT_MODE_INVERT 1
 #define MINI_REV 4
-#define false 0
-#define true 1
-
-#include <stdlib.h>
 
   int convertcolor(int c);
   #define STANDALONE // don't use graphx and fileioc
@@ -73,7 +74,7 @@ extern "C" {
   double millis(); //extern int time_shift;
   void get_time(int *h,int *m);
   void set_time(int h,int m);
-  
+
   int file_exists(const char * filename);
   int erase_file(const char * filename);
   const char * read_file(const char * filename);
@@ -105,7 +106,7 @@ extern "C" {
   int os_draw_string_small(int x,int y,int c,int bg,const char * s,int fake);
 #endif
   inline int os_draw_string_small_(int x,int y,const char * s){ return os_draw_string_small(x,y,SDK_BLACK,SDK_WHITE,s,0);}
-  
+
 #ifdef __cplusplus
   int os_draw_string_medium(int x,int y,int c,int bg,const char * s,int fake=0);
 #else
@@ -120,7 +121,7 @@ extern "C" {
 
   inline void Printxy(int x,int y,const char * s,int i){ os_draw_string_medium(x,y,0,i?COLOR_SELECTED:0xffff,s,false);}
   inline void PrintXY(int x,int y,const char * s,int i){ Printxy(3*x,3*y,s,i);}
-  
+
   void GetKey(int * key);
   int getkey(int allow_suspend); // transformed
   inline void ck_getkey(int *key){ GetKey(key);}
@@ -154,7 +155,7 @@ extern "C" {
   void SetQuitHandler( void (*f)(void));
 #define RTC_GetTicks millis
   inline void Bdisp_AllClr_VRAM(void){ clear_screen(); }
-  
+
 #ifdef __cplusplus
 }
 #endif

@@ -47,7 +47,7 @@ public:
     void			shrink_to_fit (void);
     void			manage (void* p, size_type n) noexcept;
     void			copy_link (void);
-    void			read (istream& is);
+    void			read (USTL_istream& is);
     void			read_file (const char* filename);
 #if HAVE_CPP11
     inline			memblock (memblock&& b)		: memlink(), m_Capacity(0) { swap (b); }

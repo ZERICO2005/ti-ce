@@ -18,15 +18,15 @@ namespace ustl {
 class string;
 #endif
 
-/// \class ostringstream sostream.h ustl.h
+/// \class USTL_ostringstream sostream.h ustl.h
 /// \ingroup TextStreams
 ///
 /// \brief This stream writes textual data into a memory block.
 ///
-class ostringstream : public ostream {
+class USTL_ostringstream : public USTL_ostream {
 public:
-				ostringstream (const string& v = "");
-				ostringstream (void* p, size_t n) noexcept;
+				USTL_ostringstream (const string& v = "");
+				USTL_ostringstream (void* p, size_t n) noexcept;
     void			iwrite (uint8_t v);
     void			iwrite (wchar_t v);
     inline void			iwrite (int v)			{ iformat (v); }
@@ -37,14 +37,14 @@ public:
     inline void			iwrite (double v)		{ iformat (v); }
     void			iwrite (bool v);
     inline void			iwrite (const char* s)		{ write (s, strlen(s)); }
-    inline void			iwrite (const string& v)	{ write (v.begin(), v.size()); }
+    inline void			iwrite (const string& v)	{ (void)v; }
     inline void			iwrite (fmtflags f);
 #if HAVE_LONG_LONG
     inline void			iwrite (long long v)		{ iformat (v); }
     inline void			iwrite (unsigned long long v)	{ iformat (v); }
 #endif
     inline size_type		max_size (void) const		{ return (m_Buffer.max_size()); }
-    inline ostringstream&	put (char c)			{ iwrite (uint8_t(c)); return (*this); }
+    inline USTL_ostringstream&	put (char c)			{ iwrite (uint8_t(c)); return (*this); }
     int				vformat (const char* fmt, va_list args);
     int				format (const char* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
     inline void			set_base (uint16_t b)		{ m_Base = b; }
@@ -56,10 +56,10 @@ public:
     inline void			link (memlink& l)		{ link (l.data(), l.writable_size()); }
     inline const string&	str (void)			{ flush(); return (m_Buffer); }
     void			str (const string& s);
-    ostringstream&		write (const void* buffer, size_type size);
-    inline ostringstream&	write (const cmemlink& buf)	{ return (write (buf.begin(), buf.size())); }
-    inline ostringstream&	seekp (off_t p, seekdir d =beg)	{ ostream::seekp(p,d); return (*this); }
-    ostringstream&		flush (void)			{ m_Buffer.resize (pos()); return (*this); }
+    USTL_ostringstream&		write (const void* buffer, size_type size);
+    inline USTL_ostringstream&	write (const cmemlink& buf)	{ return (write (buf.begin(), buf.size())); }
+    inline USTL_ostringstream&	seekp (off_t p, seekdir d =beg)	{ USTL_ostream::seekp(p,d); return (*this); }
+    USTL_ostringstream&		flush (void)			{ m_Buffer.resize (pos()); return (*this); }
     virtual size_type		overflow (size_type n = 1);
 protected:
     // inline void			reserve (size_type n)		{ m_Buffer.reserve (n, false); }
@@ -97,7 +97,7 @@ PRINTF_TYPESTRING_SPEC (unsigned long long, "llu")
 #undef PRINTF_TYPESTRING_SPEC
 
 template <typename T>
-void ostringstream::iformat (T v)
+void USTL_ostringstream::iformat (T v)
 {
     char fmt [16];
     fmtstring (fmt, printf_typestring(v), numeric_limits<T>::is_integer);
@@ -109,7 +109,7 @@ void ostringstream::iformat (T v)
 }
 
 /// Sets the flag \p f in the stream.
-inline void ostringstream::iwrite (fmtflags f)
+inline void USTL_ostringstream::iwrite (fmtflags f)
 {
     switch (f) {
 	case oct:	set_base (8);	break;
@@ -124,35 +124,35 @@ inline void ostringstream::iwrite (fmtflags f)
 //----------------------------------------------------------------------
 
 template <typename T> struct object_text_writer {
-    inline void operator()(ostringstream& os, const T& v) const { v.text_write (os); }
+    inline void operator()(USTL_ostringstream& os, const T& v) const { v.text_write (os); }
 };
 template <typename T> struct integral_text_object_writer {
-    inline void operator()(ostringstream& os, const T& v) const { os.iwrite (v); }
+    inline void operator()(USTL_ostringstream& os, const T& v) const { os.iwrite (v); }
 };
 template <typename T>
-inline ostringstream& operator<< (ostringstream& os, const T& v) {
+inline USTL_ostringstream& operator<< (USTL_ostringstream& os, const T& v) {
     typedef typename tm::Select <numeric_limits<T>::is_integral,
 	integral_text_object_writer<T>, object_text_writer<T> >::Result object_writer_t;
     object_writer_t()(os, v);
     return (os);
 }
 // Needed because if called with a char[], numeric_limits will not work. Should be removed if I find out how to partial specialize for arrays...
-inline ostringstream& operator<< (ostringstream& os, const char* v)
+inline USTL_ostringstream& operator<< (USTL_ostringstream& os, const char* v)
     { os.iwrite (v); return (os); }
-inline ostringstream& operator<< (ostringstream& os, char* v)
+inline USTL_ostringstream& operator<< (USTL_ostringstream& os, char* v)
     { os.iwrite (v); return (os); }
 
 //----------------------------------------------------------------------
 
 template <> struct object_text_writer<string> {
-    inline void operator()(ostringstream& os, const string& v) const { os.iwrite (v); }
+    inline void operator()(USTL_ostringstream& os, const string& v) const { os.iwrite (v); }
 };
 template <typename T> struct integral_text_object_writer<T*> {
-    inline void operator() (ostringstream& os, const T* const& v) const
+    inline void operator() (USTL_ostringstream& os, const T* const& v) const
 	{ os.iwrite ((uintptr_t)(v)); }
 };
 #define OSTRSTREAM_CAST_OPERATOR(RealT, CastT)		\
-template <> inline ostringstream& operator<< (ostringstream& os, const RealT& v) \
+template <> inline USTL_ostringstream& operator<< (USTL_ostringstream& os, const RealT& v) \
     { os.iwrite ((CastT)(v)); return (os); }
 OSTRSTREAM_CAST_OPERATOR (uint8_t* const,	const char*)
 OSTRSTREAM_CAST_OPERATOR (int8_t,		uint8_t)

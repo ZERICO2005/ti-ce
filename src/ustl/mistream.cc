@@ -26,29 +26,29 @@ void ios_base::overrun (const char* op, const char* type, uint32_t n, uint32_t p
 //--------------------------------------------------------------------
 
 /// Attaches to the block pointed to by source of size source.pos()
-istream::istream (const ostream& source) noexcept
+USTL_istream::USTL_istream (const USTL_ostream& source) noexcept
 : cmemlink (source.begin(), source.pos()),
   m_Pos (0)
 {
 }
 
-void istream::unlink (void) noexcept		{ cmemlink::unlink(); m_Pos = 0; }
-void ostream::unlink (void) noexcept		{ memlink::unlink(); m_Pos = 0; }
+void USTL_istream::unlink (void) noexcept		{ cmemlink::unlink(); m_Pos = 0; }
+void USTL_ostream::unlink (void) noexcept		{ memlink::unlink(); m_Pos = 0; }
 
 /// Writes all unread bytes into \p os.
-void istream::write (ostream& os) const
+void USTL_istream::write (USTL_ostream& os) const
 {
     os.write (ipos(), remaining());
 }
 
 /// Writes the object to stream \p os.
-void istream::text_write (ostringstream& os) const
+void USTL_istream::text_write (USTL_ostringstream& os) const
 {
     os.write (ipos(), remaining());
 }
 
 /// Reads a null-terminated string into \p str.
-void istream::read_strz (string& str)
+void USTL_istream::read_strz (string& str)
 {
     const_iterator zp = std::find (ipos(), end(), '\0');
     if (zp == end())
@@ -59,7 +59,7 @@ void istream::read_strz (string& str)
 }
 
 /// Reads at most \p n bytes into \p s.
-istream::size_type istream::readsome (void* s, size_type n)
+USTL_istream::size_type USTL_istream::readsome (void* s, size_type n)
 {
     if (remaining() < n)
 	underflow (n);
@@ -71,7 +71,7 @@ istream::size_type istream::readsome (void* s, size_type n)
 //--------------------------------------------------------------------
 
 /// Aligns the write pointer on \p grain. The skipped bytes are zeroed.
-void ostream::align (size_type grain)
+void USTL_ostream::align (size_type grain)
 {
     assert (!((grain-1)&grain) && "grain must be a power of 2");
     iterator ip = ipos();
@@ -88,33 +88,33 @@ void ostream::align (size_type grain)
 }
 
 /// Writes \p str as a null-terminated string.
-void ostream::write_strz (const char* str)
+void USTL_ostream::write_strz (const char* str)
 {
     write (str, strlen(str)+1);
 }
 
 /// Writes all available data from \p is.
-void ostream::read (istream& is)
+void USTL_ostream::read (USTL_istream& is)
 {
     write (is.ipos(), is.remaining());
     is.seek (is.size());
 }
 
 /// Writes all written data to \p os.
-void ostream::text_write (ostringstream& os) const
+void USTL_ostream::text_write (USTL_ostringstream& os) const
 {
     os.write (begin(), pos());
 }
 
 /// Inserts an empty area of \p size, at \p start.
-void ostream::insert (iterator start, size_type s)
+void USTL_ostream::insert (iterator start, size_type s)
 {
     m_Pos += s;
     memlink::insert (start, s);
 }
 
 /// Erases an area of \p size, at \p start.
-void ostream::erase (iterator start, size_type s)
+void USTL_ostream::erase (iterator start, size_type s)
 {
     m_Pos -= s;
     memlink::erase (start, s);

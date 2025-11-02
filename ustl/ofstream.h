@@ -13,7 +13,7 @@ namespace ustl {
 /// \class ofstream fdostream.h ustl.h
 /// \ingroup DeviceStreams
 /// \brief A string stream that writes to an fd. Implements cout and cerr.
-class ofstream : public ostringstream {
+class ofstream : public USTL_ostringstream {
 public:
 			ofstream (void);
     explicit		ofstream (int Fd);
@@ -22,10 +22,10 @@ public:
     inline void		open (const char* filename, openmode mode = out) { m_File.open (filename, mode); clear (m_File.rdstate()); }
     void		close (void);
     inline bool		is_open (void) const	{ return (m_File.is_open()); }
-    inline iostate	exceptions (iostate v)	{ ostringstream::exceptions(v); return (m_File.exceptions(v)); }
-    inline void		setstate (iostate v)	{ ostringstream::setstate(v); m_File.setstate(v); }
-    inline void		clear (iostate v = goodbit)	{ ostringstream::clear(v); m_File.clear(v); }
-    inline off_t	tellp (void) const		{ return (m_File.tellp() + ostringstream::tellp()); }
+    inline iostate	exceptions (iostate v)	{ USTL_ostringstream::exceptions(v); return (m_File.exceptions(v)); }
+    inline void		setstate (iostate v)	{ USTL_ostringstream::setstate(v); m_File.setstate(v); }
+    inline void		clear (iostate v = goodbit)	{ USTL_ostringstream::clear(v); m_File.clear(v); }
+    inline off_t	tellp (void) const		{ return (m_File.tellp() + USTL_ostringstream::tellp()); }
     inline int		fd (void) const			{ return (m_File.fd()); }
     inline void		stat (struct stat& rs) const	{ m_File.stat (rs); }
     inline void		set_nonblock (bool v = true)	{ m_File.set_nonblock (v); }
@@ -42,17 +42,17 @@ private:
 /// \class ifstream fdostream.h ustl.h
 /// \ingroup DeviceStreams
 /// \brief A string stream that reads from an fd. Implements cin.
-class ifstream : public istringstream {
+class ifstream : public USTL_istringstream {
 public:
 			ifstream (void);
     explicit		ifstream (int Fd);
-    explicit		ifstream (const char* filename, openmode mode = in);
-    inline void		open (const char* filename, openmode mode = in)	{ m_File.open (filename, mode); clear (m_File.rdstate()); }
+    explicit		ifstream (const char* filename, openmode mode = USTL_istringstream::in);
+    inline void		open (const char* filename, openmode mode = USTL_istringstream::in)	{ m_File.open (filename, mode); clear (m_File.rdstate()); }
     inline void		close (void)		{ m_File.close(); clear (m_File.rdstate()); }
     inline bool		is_open (void) const	{ return (m_File.is_open()); }
-    inline iostate	exceptions (iostate v)	{ istringstream::exceptions(v); return (m_File.exceptions(v)); }
-    inline void		setstate (iostate v)	{ istringstream::setstate(v); m_File.setstate(v); }
-    inline void		clear (iostate v = goodbit)	{ istringstream::clear(v); m_File.clear(v); }
+    inline iostate	exceptions (iostate v)	{ USTL_istringstream::exceptions(v); return (m_File.exceptions(v)); }
+    inline void		setstate (iostate v)	{ USTL_istringstream::setstate(v); m_File.setstate(v); }
+    inline void		clear (iostate v = goodbit)	{ USTL_istringstream::clear(v); m_File.clear(v); }
     inline off_t	tellg (void) const		{ return (m_File.tellg() - remaining()); }
     inline int		fd (void) const			{ return (m_File.fd()); }
     inline void		stat (struct stat& rs) const	{ m_File.stat (rs); }

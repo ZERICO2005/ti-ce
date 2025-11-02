@@ -22,12 +22,12 @@
 
 namespace ustl {
 
-class istream;
+class USTL_istream;
 #if 0
 class string;
 #endif
 
-/// \class ostream mostream.h ustl.h
+/// \class USTL_ostream mostream.h ustl.h
 /// \ingroup BinaryStreams
 ///
 /// \brief Helper class to write packed binary streams.
@@ -39,7 +39,7 @@ class string;
 /// Unaligned access is usually slower by orders of magnitude and,
 /// on some architectures, such as PowerPC, can cause your program to crash.
 /// Therefore, all write functions have asserts to check alignment.
-/// See \ref istream documentation for rules on designing your data format.
+/// See \ref USTL_istream documentation for rules on designing your data format.
 /// Overwriting the end of the stream will also cause a crash (an assert in
 /// debug builds). Oh, and don't be intimidated by the size of the inlines
 /// here. In the assembly code the compiler will usually chop everything down
@@ -48,7 +48,7 @@ class string;
 /// Example code:
 /// \code
 ///     memblock b;
-///     ostream os (b);
+///     USTL_ostream os (b);
 ///     os << boolVar << ios::talign<int>();
 ///     os << intVar << floatVar;
 ///     os.write (binaryData, binaryDataSize);
@@ -57,11 +57,11 @@ class string;
 ///     b.write_file ("test.file");
 /// \endcode
 ///
-class ostream : public memlink, public ios_base {
+class USTL_ostream : public memlink, public ios_base {
 public:
-    inline		ostream (void);
-    inline		ostream (void* p, streamsize n);
-    inline explicit	ostream (const memlink& source);
+    inline		USTL_ostream (void);
+    inline		USTL_ostream (void* p, streamsize n);
+    inline explicit	USTL_ostream (const memlink& source);
     inline iterator	end (void)		{ return (memlink::end()); }
     inline const_iterator end (void) const	{ return (memlink::end()); }
     inline void		seek (uoff_t newPos);
@@ -78,13 +78,13 @@ public:
     inline void		write (const void* buffer, streamsize size);
     inline void		write (const cmemlink& buf);
     void		write_strz (const char* str);
-    void		read (istream& is);
-    inline void		write (ostream& os) const	{ os.write (begin(), pos()); }
-    void		text_write (ostringstream& os) const;
+    void		read (USTL_istream& is);
+    inline void		write (USTL_ostream& os) const	{ os.write (begin(), pos()); }
+    void		text_write (USTL_ostringstream& os) const;
     inline size_t	stream_size (void) const	{ return (pos()); }
     void		insert (iterator start, streamsize size);
     void		erase (iterator start, streamsize size);
-    inline void		swap (ostream& os);
+    inline void		swap (USTL_ostream& os);
     template <typename T>
     inline void		iwrite (const T& v);
     inline virtual streamsize	overflow (streamsize = 1){ return (remaining()); }
@@ -99,7 +99,7 @@ public:
 protected:
     inline void		SetPos (uoff_t newPos)		{ m_Pos = newPos; }
 private:
-    streamoff		m_Pos;	///< Current write position.
+    std::streamoff		m_Pos;	///< Current write position.
 };
 
 //----------------------------------------------------------------------
@@ -107,9 +107,9 @@ private:
 /// \class ostream_iterator mostream.h ustl.h
 /// \ingroup BinaryStreamIterators
 ///
-/// \brief An iterator over an ostream to use with uSTL algorithms.
+/// \brief An iterator over an USTL_ostream to use with uSTL algorithms.
 ///
-template <typename T, typename Stream = ostream>
+template <typename T, typename Stream = USTL_ostream>
 class ostream_iterator {
 public:
     typedef T			value_type;
@@ -121,7 +121,7 @@ public:
     inline explicit		ostream_iterator (Stream& os)
 				    : m_Os (os) {}
     inline			ostream_iterator (const ostream_iterator& iter)
-				    : m_Os (iter.m_Os) {} 
+				    : m_Os (iter.m_Os) {}
     /// Writes \p v into the stream.
     inline ostream_iterator&	operator= (const T& v)
 				    { m_Os << v; return (*this); }
@@ -143,7 +143,7 @@ typedef ostream_iterator<utf8subchar_t> ostream_iterator_for_utf8;
 typedef utf8out_iterator<ostream_iterator_for_utf8> utf8ostream_iterator;
 
 /// Returns a UTF-8 adaptor writing to \p os.
-inline utf8ostream_iterator utf8out (ostream& os)
+inline utf8ostream_iterator utf8out (USTL_ostream& os)
 {
     ostream_iterator_for_utf8 si (os);
     return (utf8ostream_iterator (si));
@@ -155,28 +155,28 @@ inline utf8ostream_iterator utf8out (ostream& os)
 /// A stream attached to nothing is not usable. Call Link() functions
 /// inherited from memlink to attach to some memory block.
 ///
-inline ostream::ostream (void)
+inline USTL_ostream::USTL_ostream (void)
 : memlink (),
   m_Pos (0)
 {
 }
 
 /// Attaches the stream to a block at \p p of size \p n.
-inline ostream::ostream (void* p, streamsize n)
+inline USTL_ostream::USTL_ostream (void* p, streamsize n)
 : memlink (p, n),
   m_Pos (0)
 {
 }
 
 /// Attaches to the block pointed to by \p source.
-inline ostream::ostream (const memlink& source)
+inline USTL_ostream::USTL_ostream (const memlink& source)
 : memlink (source),
   m_Pos (0)
 {
 }
 
 /// Checks that \p n bytes are available in the stream, or else throws.
-inline bool ostream::verify_remaining (const char* op, const char* type, size_t n)
+inline bool USTL_ostream::verify_remaining (const char* op, const char* type, size_t n)
 {
     const size_t rem = remaining();
     bool enough = n <= rem;
@@ -185,7 +185,7 @@ inline bool ostream::verify_remaining (const char* op, const char* type, size_t 
 }
 
 /// Move the write pointer to \p newPos
-inline void ostream::seek (uoff_t newPos)
+inline void USTL_ostream::seek (uoff_t newPos)
 {
 #if WANT_STREAM_BOUNDS_CHECKING
     if (newPos > size())
@@ -197,13 +197,13 @@ inline void ostream::seek (uoff_t newPos)
 }
 
 /// Sets the current write position to \p newPos
-inline void ostream::iseek (const_iterator newPos)
+inline void USTL_ostream::iseek (const_iterator newPos)
 {
     seek (distance (begin(), const_cast<iterator>(newPos)));
 }
 
 /// Sets the current write position to \p p based on \p d.
-inline void ostream::seekp (off_t p, seekdir d)
+inline void USTL_ostream::seekp (off_t p, seekdir d)
 {
     switch (d) {
 	case beg:	seek (p); break;
@@ -213,32 +213,32 @@ inline void ostream::seekp (off_t p, seekdir d)
 }
 
 /// Skips \p nBytes without writing anything.
-inline void ostream::skip (streamsize nBytes)
+inline void USTL_ostream::skip (streamsize nBytes)
 {
     seek (pos() + nBytes);
 }
 
 /// Returns number of bytes remaining in the write buffer.
-inline streamsize ostream::remaining (void) const
+inline streamsize USTL_ostream::remaining (void) const
 {
     return (size() - pos());
 }
 
 /// Returns \c true if the write pointer is aligned on \p grain
-inline bool ostream::aligned (streamsize grain) const
+inline bool USTL_ostream::aligned (streamsize grain) const
 {
     assert (uintptr_t(begin()) % grain == 0 && "Streams should be attached aligned at the maximum element grain to avoid bus errors.");
     return (pos() % grain == 0);
 }
 
 /// Returns the number of bytes to skip to be aligned on \p grain.
-inline streamsize ostream::align_size (streamsize grain) const
+inline streamsize USTL_ostream::align_size (streamsize grain) const
 {
     return (Align (pos(), grain) - pos());
 }
 
 /// Writes \p n bytes from \p buffer.
-inline void ostream::write (const void* buffer, size_type n)
+inline void USTL_ostream::write (const void* buffer, size_type n)
 {
 #if WANT_STREAM_BOUNDS_CHECKING
     if (!verify_remaining ("write", "binary data", n))
@@ -251,14 +251,14 @@ inline void ostream::write (const void* buffer, size_type n)
 }
 
 /// Writes the contents of \p buf into the stream as a raw dump.
-inline void ostream::write (const cmemlink& buf)
+inline void USTL_ostream::write (const cmemlink& buf)
 {
     write (buf.begin(), buf.size());
 }
 
 /// Writes type T into the stream via a direct pointer cast.
 template <typename T>
-inline void ostream::iwrite (const T& v)
+inline void USTL_ostream::iwrite (const T& v)
 {
     assert (aligned (stream_align_of (v)));
 #if WANT_STREAM_BOUNDS_CHECKING
@@ -272,7 +272,7 @@ inline void ostream::iwrite (const T& v)
 }
 
 /// Swaps with \p os
-inline void ostream::swap (ostream& os)
+inline void USTL_ostream::swap (USTL_ostream& os)
 {
     memlink::swap (os);
     std::swap (m_Pos, os.m_Pos);
@@ -281,14 +281,14 @@ inline void ostream::swap (ostream& os)
 //----------------------------------------------------------------------
 
 template <typename T> struct object_writer {
-    inline void operator()(ostream& os, const T& v) const { v.write (os); }
+    inline void operator()(USTL_ostream& os, const T& v) const { v.write (os); }
 };
 template <typename T> struct integral_object_writer {
-    inline void operator()(ostream& os, const T& v) const { os.iwrite (v); }
+    inline void operator()(USTL_ostream& os, const T& v) const { os.iwrite (v); }
 };
 
 template <typename T>
-inline ostream& operator<< (ostream& os, const T& v) {
+inline USTL_ostream& operator<< (USTL_ostream& os, const T& v) {
 #if 1
   return os;
 #else
@@ -300,7 +300,7 @@ inline ostream& operator<< (ostream& os, const T& v) {
 }
 
  template <typename T>
-inline ostream& operator<< (ostream& os, const T * v) {
+inline USTL_ostream& operator<< (USTL_ostream& os, const T * v) {
    for (;*v;++v)
      os << v;
    return os;

@@ -73,7 +73,7 @@ void memblock::copy_link (void)
 	unlink();
     assign (p, sz);
 }
- 
+
 /// Copies data from \p p, \p n.
 void memblock::assign (const void* p, size_type n)
 {
@@ -100,7 +100,7 @@ void memblock::reserve (size_type newSize, bool bExact)
     pointer oldBlock (is_linked() ? NULL : data());
     // NextPow2 implementation is wrong on the TI83, commenting alignement
     const size_t alignedSize (NextPow2 (newSize));
-    if (0) // (!bExact) 
+    if (0) // (!bExact)
       newSize = alignedSize;
     // dbg_printf("reserve block size %d\n",newSize);
     pointer newBlock = (pointer) nrealloc (oldBlock, newSize);
@@ -109,7 +109,7 @@ void memblock::reserve (size_type newSize, bool bExact)
       std::copy_n (cdata(), min (size() + 1, newSize), newBlock);
     link (newBlock, size());
     //dbg_printf("reserve %x %i\n",m_Data,m_Size);
-    
+
     m_Capacity = newSize;
 }
 
@@ -147,7 +147,7 @@ memblock::iterator memblock::erase (const_iterator start, size_type n)
 }
 
 /// Reads the object from stream \p s
-void memblock::read (istream& is)
+void memblock::read (USTL_istream& is)
 {
     written_size_type n = 0;
     is >> n;

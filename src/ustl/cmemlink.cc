@@ -28,7 +28,7 @@ void cmemlink::link (const void* p, size_type n)
 }
 
 /// Writes the object to stream \p os
-void cmemlink::write (ostream& os) const
+void cmemlink::write (USTL_ostream& os) const
 {
     const written_size_type sz (size());
     assert (sz == size() && "No support for writing memblocks larger than 4G");
@@ -38,7 +38,7 @@ void cmemlink::write (ostream& os) const
 }
 
 /// Writes the object to stream \p os
-void cmemlink::text_write (ostringstream& os) const
+void cmemlink::text_write (USTL_ostringstream& os) const
 {
     os.write (begin(), readable_size());
 }

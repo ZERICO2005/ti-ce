@@ -16,18 +16,18 @@
 
 namespace ustl {
 
-/// \class istringstream sistream.h ustl.h
+/// \class USTL_istringstream sistream.h ustl.h
 /// \ingroup TextStreams
 ///
 /// \brief A stream that reads textual data from a memory block.
 ///
-class istringstream : public istream {
+class USTL_istringstream : public USTL_istream {
 public:
     static const size_type	c_MaxDelimiters = 16;	///< Maximum number of word delimiters.
 public:
-				istringstream (void) noexcept;
-				istringstream (const void* p, size_type n) noexcept;
-    explicit			istringstream (const cmemlink& source) noexcept;
+				USTL_istringstream (void) noexcept;
+				USTL_istringstream (const void* p, size_type n) noexcept;
+    explicit			USTL_istringstream (const cmemlink& source) noexcept;
     void			iread (int8_t& v)	{ v = skip_delimiters(); }
     void			iread (int32_t& v);
     void			iread (double& v);
@@ -41,24 +41,24 @@ public:
     void			iread (long long& v);
 #endif
     // inline string		str (void) const	{ string s; s.link (*this); return (s); }
-    // inline istringstream&	str (const string& s)	{ link (s); return (*this); }
-    inline istringstream&	get (char& c)	{ return (read (&c, sizeof(c))); }
+    // inline USTL_istringstream&	str (const string& s)	{ link (s); return (*this); }
+    inline USTL_istringstream&	get (char& c)	{ return (read (&c, sizeof(c))); }
     inline int			get (void)	{ char c = EOF; get(c); return (c); }
-    istringstream&		get (char* p, size_type n, char delim = '\n');
-    istringstream&		get (string& s, char delim = '\n');
-    istringstream&		getline (char* p, size_type n, char delim = '\n');
-    istringstream&		getline (string& s, char delim = '\n');
-    istringstream&		ignore (size_type n, char delim = '\0');
+    USTL_istringstream&		get (char* p, size_type n, char delim = '\n');
+    USTL_istringstream&		get (string& s, char delim = '\n');
+    USTL_istringstream&		getline (char* p, size_type n, char delim = '\n');
+    USTL_istringstream&		getline (string& s, char delim = '\n');
+    USTL_istringstream&		ignore (size_type n, char delim = '\0');
     inline char			peek (void)	{ int8_t v; iread (v); ungetc(); return (v); }
-    inline istringstream&	putback (char)	{ ungetc(); return (*this); }
-    inline istringstream&	unget (void)	{ ungetc(); return (*this); }
+    inline USTL_istringstream&	putback (char)	{ ungetc(); return (*this); }
+    inline USTL_istringstream&	unget (void)	{ ungetc(); return (*this); }
     inline void			set_delimiters (const char* delimiters);
     inline void			set_base (short base);
     inline void			set_decimal_separator (char)	{ }
     inline void			set_thousand_separator (char)	{ }
-    istringstream&		read (void* buffer, size_type size);
-    inline istringstream&	read (memlink& buf)		{ return (read (buf.begin(), buf.size())); }
-    inline istringstream&	seekg (off_t p, seekdir d =beg)	{ istream::seekg(p,d); return (*this); }
+    USTL_istringstream&		read (void* buffer, size_type size);
+    inline USTL_istringstream&	read (memlink& buf)		{ return (read (buf.begin(), buf.size())); }
+    inline USTL_istringstream&	seekg (off_t p, seekdir d =beg)	{ USTL_istream::seekg(p,d); return (*this); }
     inline int			sync (void)			{ skip (remaining()); return (0); }
 protected:
     char			skip_delimiters (void);
@@ -74,13 +74,13 @@ private:
 //----------------------------------------------------------------------
 
 /// Sets the numeric base used to read numbers.
-inline void istringstream::set_base (short base)
+inline void USTL_istringstream::set_base (short base)
 {
     m_Base = base;
 }
 
 /// Sets delimiters to the contents of \p delimiters.
-inline void istringstream::set_delimiters (const char* delimiters)
+inline void USTL_istringstream::set_delimiters (const char* delimiters)
 {
 #if (__i386__ || __x86_64__) && CPU_HAS_SSE && HAVE_VECTOR_EXTENSIONS
     typedef uint32_t v16ud_t __attribute__((vector_size(16)));
@@ -93,7 +93,7 @@ inline void istringstream::set_delimiters (const char* delimiters)
 
 /// Reads one type as another.
 template <typename RealT, typename CastT>
-inline void _cast_read (istringstream& is, RealT& v)
+inline void _cast_read (USTL_istringstream& is, RealT& v)
 {
     CastT cv;
     is.iread (cv);
@@ -101,19 +101,19 @@ inline void _cast_read (istringstream& is, RealT& v)
 }
 
 /// Reads a line of text from \p is into \p s
-inline istringstream& getline (istringstream& is, string& s)
+inline USTL_istringstream& getline (USTL_istringstream& is, string& s)
     { return (is.getline (s)); }
 
 //----------------------------------------------------------------------
 
 template <typename T> struct object_text_reader {
-    inline void operator()(istringstream& is, T& v) const { v.text_read (is); }
+    inline void operator()(USTL_istringstream& is, T& v) const { v.text_read (is); }
 };
 template <typename T> struct integral_text_object_reader {
-    inline void operator()(istringstream& is, T& v) const { is.iread (v); }
+    inline void operator()(USTL_istringstream& is, T& v) const { is.iread (v); }
 };
 template <typename T>
-inline istringstream& operator>> (istringstream& is, T& v) {
+inline USTL_istringstream& operator>> (USTL_istringstream& is, T& v) {
     typedef typename tm::Select <numeric_limits<T>::is_integral,
 	integral_text_object_reader<T>, object_text_reader<T> >::Result object_reader_t;
     object_reader_t()(is, v);
@@ -123,11 +123,11 @@ inline istringstream& operator>> (istringstream& is, T& v) {
 //----------------------------------------------------------------------
 
 template <> struct object_text_reader<string> {
-    inline void operator()(istringstream& is, string& v) const { is.iread (v); }
+    inline void operator()(USTL_istringstream& is, string& v) const { is.iread (v); }
 };
 #define ISTRSTREAM_CAST_OPERATOR(RealT, CastT)		\
 template <> struct integral_text_object_reader<RealT> {	\
-    inline void operator() (istringstream& is, RealT& v) const	\
+    inline void operator() (USTL_istringstream& is, RealT& v) const	\
 	{ _cast_read<RealT,CastT>(is, v); }		\
 };
 ISTRSTREAM_CAST_OPERATOR (uint8_t,	int8_t)

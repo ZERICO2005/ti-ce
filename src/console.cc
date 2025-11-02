@@ -16,7 +16,7 @@ namespace xcas {
 #include <sys/lcd.h>
 
 namespace ustl {
-  
+
 }
 
 namespace std {
@@ -3161,7 +3161,7 @@ void dConsoleRedraw(){
 const Char *Console_GetLine()
 {
   int return_val;
-	
+
   do
     {
       return_val = Console_GetKey();
