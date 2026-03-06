@@ -14,15 +14,9 @@
 // minimal size (avoid blocks that are too small)
 #define MALLOC_MINSIZE 6
 
-static unsigned int freeslotpos(unsigned int n) {
-    if (n == 0) {
-        /**
-         * this is what the original code returns, although this is probably
-         * not the ideal value to return when n == 0
-         */
-        return 31;
-    }
-    return __builtin_ctz(n);
+// behavior is undefined if (n == 0)
+static unsigned int freeslotpos(uint32_t n) {
+    return (unsigned int)__builtin_ctzl(n);
 }
 
 typedef struct char2_ {
@@ -50,20 +44,23 @@ extern uint8_t __heaptop[];
 static uintptr_t heap2_ptr = (uintptr_t)__heapbot;
 static uintptr_t heap2_ptrend = (uintptr_t)__heaptop;
 
-#define ALLOC2 (12 * INT24_WIDTH)
-static unsigned int freeslot2[ALLOC2 / INT24_WIDTH] = {
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
+#define ALLOC2 (9 * UINT32_WIDTH)
+static uint32_t freeslot2[ALLOC2 / UINT32_WIDTH] = {
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
 };
-#define ALLOC3 (12 * INT24_WIDTH)
-static unsigned int freeslot3[ALLOC3 / INT24_WIDTH] = {
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
+#define ALLOC3 (9 * UINT32_WIDTH)
+static uint32_t freeslot3[ALLOC3 / UINT32_WIDTH] = {
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
 };
-#define ALLOC6 (12 * INT24_WIDTH)
-static unsigned int freeslot6[ALLOC6 / INT24_WIDTH] = {
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
-    0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF,
+#define ALLOC6 (9 * UINT32_WIDTH)
+static uint32_t freeslot6[ALLOC6 / UINT32_WIDTH] = {
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
+    UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF), UINT32_C(0xFFFFFFFF),
 };
 
 #define LCD_SIZE_8BPP (LCD_WIDTH * LCD_HEIGHT)
@@ -95,7 +92,7 @@ void* _custom_malloc(size_t alloc_size)
     {
         if (tab2 && alloc_size <= sizeof(char2_t))
         {
-            for (unsigned int i = 0; i < ALLOC2 / INT24_WIDTH; ++i)
+            for (unsigned int i = 0; i < ALLOC2 / UINT32_WIDTH; ++i)
             {
                 if (freeslot2[i] == 0)
                 {
@@ -103,13 +100,13 @@ void* _custom_malloc(size_t alloc_size)
                 }
                 const unsigned int pos = freeslotpos(freeslot2[i]);
                 freeslot2[i] &= ~(1 << pos);
-                // dbg_printf("allocfast2 %p %p\n", tab2, tab2 + i * INT24_WIDTH + pos);
-                return (void*)(tab2 + i * INT24_WIDTH + pos);
+                // dbg_printf("allocfast2 %p %p\n", tab2, tab2 + i * UINT32_WIDTH + pos);
+                return (void*)(tab2 + i * UINT32_WIDTH + pos);
             }
         }
         if (tab3 && alloc_size <= sizeof(char3_t))
         {
-            for (unsigned int i = 0; i < ALLOC3 / INT24_WIDTH; ++i)
+            for (unsigned int i = 0; i < ALLOC3 / UINT32_WIDTH; ++i)
             {
                 if (freeslot3[i] == 0)
                 {
@@ -117,13 +114,13 @@ void* _custom_malloc(size_t alloc_size)
                 }
                 const unsigned int pos = freeslotpos(freeslot3[i]);
                 freeslot3[i] &= ~(1 << pos);
-                // dbg_printf("allocfast3 %p %p\n", tab3, tab3 + i * INT24_WIDTH + pos);
-                return (void*)(tab3 + i * INT24_WIDTH + pos);
+                // dbg_printf("allocfast3 %p %p\n", tab3, tab3 + i * UINT32_WIDTH + pos);
+                return (void*)(tab3 + i * UINT32_WIDTH + pos);
             }
         }
         if (tab6 && alloc_size <= sizeof(char6_t))
         {
-            for (unsigned int i = 0; i < ALLOC6 / INT24_WIDTH; ++i)
+            for (unsigned int i = 0; i < ALLOC6 / UINT32_WIDTH; ++i)
             {
                 if (freeslot6[i] == 0)
                 {
@@ -131,8 +128,8 @@ void* _custom_malloc(size_t alloc_size)
                 }
                 const unsigned int pos = freeslotpos(freeslot6[i]);
                 freeslot6[i] &= ~(1 << pos);
-                // dbg_printf("allocfast6 %p %p\n", tab6, tab6 + i * INT24_WIDTH + pos);
-                return (void*)(tab6 + i * INT24_WIDTH + pos);
+                // dbg_printf("allocfast6 %p %p\n", tab6, tab6 + i * UINT32_WIDTH + pos);
+                return (void*)(tab6 + i * UINT32_WIDTH + pos);
             }
         }
     }
@@ -232,7 +229,7 @@ void _custom_free(void* ptr)
     ) {
         const unsigned int pos = ((size_t)ptr - ((size_t)&tab2[0])) / sizeof(char2_t);
         // dbg_printf("deletefast2 %p pos=%i\n", ptr, pos);
-        freeslot2[pos / INT24_WIDTH] |= (1 << (pos % INT24_WIDTH));
+        freeslot2[pos / UINT32_WIDTH] |= (1 << (pos % UINT32_WIDTH));
         return;
     }
     if (
@@ -241,7 +238,7 @@ void _custom_free(void* ptr)
     ) {
         const unsigned int pos = ((size_t)ptr - ((size_t)&tab3[0])) / sizeof(char3_t);
         // dbg_printf("deletefast3 %p pos=%i\n", ptr, pos);
-        freeslot3[pos / INT24_WIDTH] |= (1 << (pos % INT24_WIDTH));
+        freeslot3[pos / UINT32_WIDTH] |= (1 << (pos % UINT32_WIDTH));
         return;
     }
     if (
@@ -250,7 +247,7 @@ void _custom_free(void* ptr)
     ) {
         const unsigned int pos = ((size_t)ptr - ((size_t)&tab6[0])) / sizeof(char6_t);
         // dbg_printf("deletefast6 %p pos=%i\n", ptr, pos);
-        freeslot6[pos / INT24_WIDTH] |= (1 << (pos % INT24_WIDTH));
+        freeslot6[pos / UINT32_WIDTH] |= (1 << (pos % UINT32_WIDTH));
         return;
     }
 
